@@ -34,10 +34,29 @@ function renderFeaturedSongs(songs) {
   const container = document.getElementById('featured-grid');
   if (!container) return;
 
-  // Render tức thì không animation trễ thị giác, kèm class cuộn ngang mobile
-  container.innerHTML = songs.map((tab, index) => 
-    renderSongCard(tab, index, 'flex-shrink-0 w-[82vw] max-w-[320px] snap-center md:w-auto md:max-w-none')
+  // Render 3 thẻ bài hát nổi bật với kích thước hé lộ thẻ kế bên
+  const songsHtml = songs.map((tab, index) => 
+    renderSongCard(tab, index, 'flex-shrink-0 w-[74vw] max-w-[280px] snap-center md:w-auto md:max-w-none')
   ).join('');
+
+  // Card "Xem thêm tab khác →" CTA cuối hàng trên Mobile
+  const moreCardHtml = `
+    <a href="kho-tab.html" class="flex-shrink-0 w-[74vw] max-w-[280px] snap-center md:hidden bg-surfaceCard/90 hover:bg-terracotta hover:text-white border-2 border-dashed border-terracotta/50 rounded-3xl p-6 shadow-soft transition-all duration-300 flex flex-col items-center justify-center text-center space-y-4 group/cta min-h-[360px]">
+      <div class="w-14 h-14 rounded-full bg-terracotta-light text-terracotta group-hover/cta:bg-white group-hover/cta:text-terracotta flex items-center justify-center text-2xl shadow-sm group-hover/cta:scale-110 transition-transform">
+        🎸
+      </div>
+      <div class="space-y-1.5">
+        <span class="text-base font-black text-charcoal group-hover/cta:text-white transition-colors block">Xem Thêm Tab Khác</span>
+        <p class="text-xs text-charcoal-muted group-hover/cta:text-white/80 transition-colors font-medium">Khám phá toàn bộ kho Video Tab fingerstyle & acoustic</p>
+      </div>
+      <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-terracotta text-white group-hover/cta:bg-white group-hover/cta:text-terracotta text-xs font-black transition-colors shadow-xs">
+        <span>Xem toàn bộ kho tab</span>
+        <svg class="w-3.5 h-3.5 transform group-hover/cta:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+      </span>
+    </a>
+  `;
+
+  container.innerHTML = songsHtml + moreCardHtml;
 }
 
 
@@ -49,9 +68,9 @@ function showFeaturedSkeleton() {
   const container = document.getElementById('featured-grid');
   if (!container) return;
   container.innerHTML = `
-    <div class="flex-shrink-0 w-[82vw] max-w-[320px] snap-center md:w-auto md:max-w-none skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
-    <div class="flex-shrink-0 w-[82vw] max-w-[320px] snap-center md:w-auto md:max-w-none skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
-    <div class="flex-shrink-0 w-[82vw] max-w-[320px] snap-center md:w-auto md:max-w-none skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
+    <div class="flex-shrink-0 w-[74vw] max-w-[280px] snap-center md:w-auto md:max-w-none skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
+    <div class="flex-shrink-0 w-[74vw] max-w-[280px] snap-center md:w-auto md:max-w-none skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
+    <div class="flex-shrink-0 w-[74vw] max-w-[280px] snap-center md:w-auto md:max-w-none skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
   `;
 }
 
