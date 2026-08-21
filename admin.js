@@ -10,8 +10,8 @@
 
 import { onAuthChange, logoutAdmin } from './firebase-auth-service.js';
 import {
-  fetchAllSongs, createSong, updateSong, deleteSong, swapSongsOrder,
-  fetchAllGears, createGear, updateGear, deleteGear, swapGearsOrder,
+  fetchAllSongs, createSong, updateSong, deleteSong, swapSongsOrder, reorderAllSongs,
+  fetchAllGears, createGear, updateGear, deleteGear, swapGearsOrder, reorderAllGears,
   DEFAULT_GEARS
 } from './firebase-service.js';
 
@@ -211,19 +211,24 @@ function renderSongsTable(songs) {
         <td class="py-4 px-4">${badgeType}</td>
         <td class="py-4 px-4 font-mono font-black text-[#1A1614] text-sm">${isFree ? '0đ' : (song.priceFormatted || '239.000đ')}</td>
         
-        <!-- Cột Thứ Tự / Vị Trí với nút Lên / Xuống -->
+        <!-- Cột Thứ Tự / Vị Trí với Ô Nhập Số + Nút Lưu -->
         <td class="py-4 px-4 text-center">
-          <div class="inline-flex items-center gap-1.5 bg-[#EAE4DC] px-2 py-1 rounded-xl border border-[#D6CFC4]">
-            <button onclick="handleMoveSong('${song.id}', -1)" ${isFirst ? 'disabled' : ''} 
-              class="w-6 h-6 rounded-lg flex items-center justify-center font-black text-xs transition-colors ${isFirst ? 'text-[#A89F95] cursor-not-allowed opacity-40' : 'bg-white text-charcoal hover:bg-terracotta hover:text-white cursor-pointer shadow-xs'}"
-              title="Đẩy lên trên (tăng độ ưu tiên)">
-              ▲
-            </button>
-            <span class="font-mono font-black text-xs text-charcoal min-w-[20px] text-center">${currentOrder}</span>
-            <button onclick="handleMoveSong('${song.id}', 1)" ${isLast ? 'disabled' : ''} 
-              class="w-6 h-6 rounded-lg flex items-center justify-center font-black text-xs transition-colors ${isLast ? 'text-[#A89F95] cursor-not-allowed opacity-40' : 'bg-white text-charcoal hover:bg-terracotta hover:text-white cursor-pointer shadow-xs'}"
-              title="Đẩy xuống dưới">
-              ▼
+          <div class="inline-flex items-center gap-1.5 bg-[#EAE4DC] p-1 rounded-xl border border-[#D6CFC4]">
+            <input 
+              type="number" 
+              min="1" 
+              max="${songs.length}" 
+              value="${currentOrder}" 
+              id="order-input-song-${song.id}" 
+              onkeydown="if(event.key==='Enter') handleSaveSongPosition('${song.id}')"
+              class="w-12 text-center py-1 bg-white border border-[#D6CFC4] rounded-lg font-black text-xs text-[#1A1614] focus:border-terracotta focus:outline-none shadow-xs" 
+              title="Nhập số vị trí mong muốn (VD: 1, 2, 3...) rồi bấm Lưu"
+            />
+            <button 
+              onclick="handleSaveSongPosition('${song.id}')" 
+              class="px-2.5 py-1 rounded-lg bg-warm-gradient hover:brightness-105 text-white font-black text-[11px] transition-all shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
+              title="Lưu vị trí mới: Bài này sẽ chèn vào vị trí trên, các bài khác tự động dời xuống">
+              Lưu
             </button>
           </div>
         </td>
@@ -249,28 +254,37 @@ async function loadSongs() {
   renderSongsTable(songs);
 }
 
-// Di chuyển thứ tự bài hát (Lên / Xuống)
-window.handleMoveSong = async function(songId, direction) {
-  const idx = currentSongsList.findIndex(s => s.id === songId);
-  if (idx === -1) return;
-  const targetIdx = idx + direction;
-  if (targetIdx < 0 || targetIdx >= currentSongsList.length) return;
+// Lưu vị trí mới của bài hát (Chèn vị trí & tự động dời các bài khác)
+window.handleSaveSongPosition = async function(songId) {
+  const input = document.getElementById(`order-input-song-${songId}`);
+  if (!input) return;
 
-  const currentSong = currentSongsList[idx];
-  const targetSong  = currentSongsList[targetIdx];
+  let targetPos = parseInt(input.value, 10);
+  if (isNaN(targetPos) || targetPos < 1) targetPos = 1;
+  if (targetPos > currentSongsList.length) targetPos = currentSongsList.length;
 
-  const currentOrder = currentSong.order !== undefined ? currentSong.order : (idx + 1);
-  const targetOrder  = targetSong.order !== undefined ? targetSong.order : (targetIdx + 1);
+  const currentIdx = currentSongsList.findIndex(s => s.id === songId);
+  if (currentIdx === -1) return;
 
-  const finalOrder1 = currentOrder === targetOrder ? (targetIdx + 1) : targetOrder;
-  const finalOrder2 = currentOrder === targetOrder ? (idx + 1) : currentOrder;
+  // Nếu vị trí nhập vào trùng với vị trí hiện tại
+  if (targetPos === currentIdx + 1) {
+    showAdminToast(`Bài hát đã ở đúng vị trí ${targetPos} rồi!`);
+    return;
+  }
 
-  const res = await swapSongsOrder(currentSong.id, finalOrder1, targetSong.id, finalOrder2);
+  // Thuật toán Array Shift (Splice reorder)
+  const list = [...currentSongsList];
+  const [movedSong] = list.splice(currentIdx, 1);
+  list.splice(targetPos - 1, 0, movedSong);
+
+  const orderedIds = list.map(s => s.id);
+  const res = await reorderAllSongs(orderedIds);
+
   if (res.success) {
-    showAdminToast(`Đã chuyển vị trí bài "${currentSong.title}"!`);
+    showAdminToast(`Đã chuyển "${movedSong.title}" về vị trí ${targetPos}! Các bài khác đã tự động dời.`);
     await loadSongs();
   } else {
-    showAdminToast(res.error || 'Lỗi khi đổi vị trí', false);
+    showAdminToast(res.error || 'Lỗi khi lưu vị trí', false);
   }
 };
 
@@ -321,19 +335,24 @@ function renderGearsTable(gears) {
         </td>
         <td class="py-4 px-4">${buyInfo}</td>
         
-        <!-- Cột Thứ Tự / Vị Trí Đồ Nghề với nút Lên / Xuống -->
+        <!-- Cột Thứ Tự / Vị Trí Đồ Nghề với Ô Nhập Số + Nút Lưu -->
         <td class="py-4 px-4 text-center">
-          <div class="inline-flex items-center gap-1.5 bg-[#EAE4DC] px-2 py-1 rounded-xl border border-[#D6CFC4]">
-            <button onclick="handleMoveGear('${gear.id}', -1)" ${isFirst ? 'disabled' : ''} 
-              class="w-6 h-6 rounded-lg flex items-center justify-center font-black text-xs transition-colors ${isFirst ? 'text-[#A89F95] cursor-not-allowed opacity-40' : 'bg-white text-charcoal hover:bg-terracotta hover:text-white cursor-pointer shadow-xs'}"
-              title="Đẩy lên trước">
-              ▲
-            </button>
-            <span class="font-mono font-black text-xs text-charcoal min-w-[20px] text-center">${currentOrder}</span>
-            <button onclick="handleMoveGear('${gear.id}', 1)" ${isLast ? 'disabled' : ''} 
-              class="w-6 h-6 rounded-lg flex items-center justify-center font-black text-xs transition-colors ${isLast ? 'text-[#A89F95] cursor-not-allowed opacity-40' : 'bg-white text-charcoal hover:bg-terracotta hover:text-white cursor-pointer shadow-xs'}"
-              title="Đẩy xuống sau">
-              ▼
+          <div class="inline-flex items-center gap-1.5 bg-[#EAE4DC] p-1 rounded-xl border border-[#D6CFC4]">
+            <input 
+              type="number" 
+              min="1" 
+              max="${gears.length}" 
+              value="${currentOrder}" 
+              id="order-input-gear-${gear.id}" 
+              onkeydown="if(event.key==='Enter') handleSaveGearPosition('${gear.id}')"
+              class="w-12 text-center py-1 bg-white border border-[#D6CFC4] rounded-lg font-black text-xs text-[#1A1614] focus:border-terracotta focus:outline-none shadow-xs" 
+              title="Nhập số vị trí mong muốn (VD: 1, 2, 3...) rồi bấm Lưu"
+            />
+            <button 
+              onclick="handleSaveGearPosition('${gear.id}')" 
+              class="px-2.5 py-1 rounded-lg bg-warm-gradient hover:brightness-105 text-white font-black text-[11px] transition-all shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
+              title="Lưu vị trí mới: Món này sẽ chèn vào vị trí trên, các món khác tự động dời xuống">
+              Lưu
             </button>
           </div>
         </td>
@@ -359,28 +378,36 @@ async function loadGears() {
   renderGearsTable(gears);
 }
 
-// Di chuyển thứ tự đồ nghề (Lên / Xuống)
-window.handleMoveGear = async function(gearId, direction) {
-  const idx = currentGearsList.findIndex(g => g.id === gearId);
-  if (idx === -1) return;
-  const targetIdx = idx + direction;
-  if (targetIdx < 0 || targetIdx >= currentGearsList.length) return;
+// Lưu vị trí mới của đồ nghề (Chèn vị trí & tự động dời các món khác)
+window.handleSaveGearPosition = async function(gearId) {
+  const input = document.getElementById(`order-input-gear-${gearId}`);
+  if (!input) return;
 
-  const currentGear = currentGearsList[idx];
-  const targetGear  = currentGearsList[targetIdx];
+  let targetPos = parseInt(input.value, 10);
+  if (isNaN(targetPos) || targetPos < 1) targetPos = 1;
+  if (targetPos > currentGearsList.length) targetPos = currentGearsList.length;
 
-  const currentOrder = currentGear.order !== undefined ? currentGear.order : (idx + 1);
-  const targetOrder  = targetGear.order !== undefined ? targetGear.order : (targetIdx + 1);
+  const currentIdx = currentGearsList.findIndex(g => g.id === gearId);
+  if (currentIdx === -1) return;
 
-  const finalOrder1 = currentOrder === targetOrder ? (targetIdx + 1) : targetOrder;
-  const finalOrder2 = currentOrder === targetOrder ? (idx + 1) : currentOrder;
+  if (targetPos === currentIdx + 1) {
+    showAdminToast(`Món đồ nghề đã ở đúng vị trí ${targetPos} rồi!`);
+    return;
+  }
 
-  const res = await swapGearsOrder(currentGear.id, finalOrder1, targetGear.id, finalOrder2);
+  // Thuật toán Array Shift
+  const list = [...currentGearsList];
+  const [movedGear] = list.splice(currentIdx, 1);
+  list.splice(targetPos - 1, 0, movedGear);
+
+  const orderedIds = list.map(g => g.id);
+  const res = await reorderAllGears(orderedIds);
+
   if (res.success) {
-    showAdminToast(`Đã đổi vị trí món "${currentGear.title}"!`);
+    showAdminToast(`Đã chuyển món "${movedGear.title}" về vị trí ${targetPos}! Các món khác đã tự động dời.`);
     await loadGears();
   } else {
-    showAdminToast(res.error || 'Lỗi khi đổi vị trí đồ nghề', false);
+    showAdminToast(res.error || 'Lỗi khi lưu vị trí đồ nghề', false);
   }
 };
 
@@ -697,14 +724,31 @@ document.addEventListener('DOMContentLoaded', () => {
       if (saveSpinner) saveSpinner.classList.add('hidden');
 
       if (res.success) {
+        // Tự động dời vị trí các bài khác nếu order có thay đổi
+        if (isEdit) {
+          const currentIdx = currentSongsList.findIndex(s => s.id === songId);
+          if (currentIdx !== -1 && orderVal !== (currentIdx + 1)) {
+            let targetPos = Math.max(1, Math.min(orderVal, currentSongsList.length));
+            const list = [...currentSongsList];
+            const [movedSong] = list.splice(currentIdx, 1);
+            list.splice(targetPos - 1, 0, movedSong);
+            await reorderAllSongs(list.map(s => s.id));
+          }
+        } else if (res.id && orderVal <= currentSongsList.length) {
+          let targetPos = Math.max(1, Math.min(orderVal, currentSongsList.length + 1));
+          const list = [...currentSongsList];
+          list.splice(targetPos - 1, 0, { id: res.id });
+          await reorderAllSongs(list.map(s => s.id));
+        }
+
         toggleSongModal(false);
         showAdminToast(isEdit
-          ? 'Da cap nhat bai hat "' + title + '" thanh cong!'
-          : 'Da them bai hat "' + title + '" thanh cong!'
+          ? `Đã cập nhật bài hát "${title}" thành công!`
+          : `Đã thêm bài hát "${title}" thành công!`
         );
         await loadSongs();
       } else {
-        showAdminToast(res.error || 'Co loi xay ra, vui long thu lai.', false);
+        showAdminToast(res.error || 'Có lỗi xảy ra, vui lòng thử lại.', false);
       }
     });
   }
@@ -716,8 +760,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (addGearBtn) {
     addGearBtn.addEventListener('click', () => {
       resetFormForNewGear();
-      document.getElementById('modal-gear-form-title').textContent = 'Them Mon Do Nghe';
-      document.getElementById('save-gear-btn-text').textContent    = 'Luu Mon Do Nghe';
+      document.getElementById('modal-gear-form-title').textContent = 'Thêm Món Đồ Nghề';
+      document.getElementById('save-gear-btn-text').textContent    = 'Lưu Món Đồ Nghề';
       toggleGearModal(true);
     });
   }
@@ -726,19 +770,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const seedGearsBtn = document.getElementById('seed-gears-btn');
   if (seedGearsBtn) {
     seedGearsBtn.addEventListener('click', async () => {
-      const ok = confirm('Ban co muon nap 4 mon do nghe mau vao Firestore khong?');
+      const ok = confirm('Bạn có muốn nạp 4 món đồ nghề mẫu vào Firestore không?');
       if (!ok) return;
 
       seedGearsBtn.disabled = true;
-      seedGearsBtn.textContent = 'Dang nap...';
+      seedGearsBtn.textContent = 'Đang nạp...';
 
       for (const item of DEFAULT_GEARS) {
         await createGear(item);
       }
 
       seedGearsBtn.disabled = false;
-      seedGearsBtn.textContent = '🔄 Nap 4 Mon Mau';
-      showAdminToast('Da nap thanh cong 4 mon do nghe mau!');
+      seedGearsBtn.textContent = '🔄 Nạp 4 Món Mẫu';
+      showAdminToast('Đã nạp thành công 4 món đồ nghề mẫu!');
       await loadGears();
     });
   }
@@ -766,19 +810,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const title  = document.getElementById('form-gear-title').value.trim();
 
       if (!title) {
-        alert('Vui long nhap ten mon do nghe nhe!');
+        alert('Vui lòng nhập tên món đồ nghề nhé!');
         return;
       }
 
+      const orderVal = Number(document.getElementById('form-gear-order').value) || 1;
+
       const gearData = {
         title,
-        category:    document.getElementById('form-gear-category').value.trim() || 'THIET BI',
+        category:    document.getElementById('form-gear-category').value.trim() || 'THIẾT BỊ',
         image:       cleanMediaPath(document.getElementById('form-gear-image').value) || 'assets/clover.jpg',
         description: document.getElementById('form-gear-description').value.trim(),
         buyUrl:      document.getElementById('form-gear-buyUrl').value.trim(),
         buyText:     document.getElementById('form-gear-buyText').value.trim() || 'Mua ngay',
         footerText:  document.getElementById('form-gear-footerText').value.trim(),
-        order:       Number(document.getElementById('form-gear-order').value) || 1,
+        order:       orderVal,
       };
 
       const saveBtn     = document.getElementById('save-gear-btn');
@@ -801,14 +847,31 @@ document.addEventListener('DOMContentLoaded', () => {
       if (saveSpinner) saveSpinner.classList.add('hidden');
 
       if (res.success) {
+        // Tự động dời vị trí các món khác nếu order có thay đổi
+        if (isEdit) {
+          const currentIdx = currentGearsList.findIndex(g => g.id === gearId);
+          if (currentIdx !== -1 && orderVal !== (currentIdx + 1)) {
+            let targetPos = Math.max(1, Math.min(orderVal, currentGearsList.length));
+            const list = [...currentGearsList];
+            const [movedGear] = list.splice(currentIdx, 1);
+            list.splice(targetPos - 1, 0, movedGear);
+            await reorderAllGears(list.map(g => g.id));
+          }
+        } else if (res.id && orderVal <= currentGearsList.length) {
+          let targetPos = Math.max(1, Math.min(orderVal, currentGearsList.length + 1));
+          const list = [...currentGearsList];
+          list.splice(targetPos - 1, 0, { id: res.id });
+          await reorderAllGears(list.map(g => g.id));
+        }
+
         toggleGearModal(false);
         showAdminToast(isEdit
-          ? 'Da cap nhat mon do "' + title + '" thanh cong!'
-          : 'Da them mon do "' + title + '" thanh cong!'
+          ? `Đã cập nhật món đồ "${title}" thành công!`
+          : `Đã thêm món đồ "${title}" thành công!`
         );
         await loadGears();
       } else {
-        showAdminToast(res.error || 'Co loi xay ra khi luu do nghe.', false);
+        showAdminToast(res.error || 'Có lỗi xảy ra khi lưu đồ nghề.', false);
       }
     });
   }

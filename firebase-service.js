@@ -20,7 +20,8 @@ import {
   deleteDoc,
   doc,
   orderBy,
-  query
+  query,
+  writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import {
   ref as storageRef,
@@ -202,6 +203,67 @@ export async function updateSong(id, songData) {
   } catch (error) {
     console.error(`[GuitarByQuang] Lỗi khi cập nhật bài hát id="${id}":`, error);
     return { success: false, error: 'Không thể cập nhật bài hát. Vui lòng thử lại.' };
+  }
+}
+
+/**
+ * Cập nhật toàn bộ thứ tự (order) của danh sách bài hát theo mảng ID đã sắp xếp.
+ * Tự động gán order = 1, 2, 3... theo đúng thứ tự mảng và lưu đồng thời qua writeBatch.
+ * @param {Array<string>} orderedSongIds - Mảng các songId theo thứ tự mong muốn
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function reorderAllSongs(orderedSongIds) {
+  try {
+    if (!orderedSongIds || !orderedSongIds.length) {
+      return { success: false, error: 'Danh sách bài hát không hợp lệ.' };
+    }
+
+    const batch = writeBatch(db);
+    orderedSongIds.forEach((id, index) => {
+      const docRef = doc(db, SONGS_COLLECTION, id);
+      batch.update(docRef, { order: index + 1 });
+    });
+
+    await batch.commit();
+    return { success: true };
+  } catch (error) {
+    console.error('[GuitarByQuang] Lỗi khi cập nhật lại toàn bộ thứ tự bài hát:', error);
+    return { success: false, error: 'Không thể lưu vị trí: ' + (error.message || error) };
+  }
+}
+
+/**
+ * Cập nhật toàn bộ thứ tự (order) của danh sách đồ nghề theo mảng ID đã sắp xếp.
+ * @param {Array<string>} orderedGearIds
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function reorderAllGears(orderedGearIds) {
+  try {
+    if (!orderedGearIds || !orderedGearIds.length) {
+      return { success: false, error: 'Danh sách đồ nghề không hợp lệ.' };
+    }
+
+    // Nếu collection rỗng, nạp default trước
+    const checkSnap = await getDocs(collection(db, GEARS_COLLECTION));
+    if (checkSnap.empty) {
+      for (const item of DEFAULT_GEARS) {
+        const itemData = { ...item };
+        delete itemData.id;
+        await setDoc(doc(db, GEARS_COLLECTION, item.id), itemData);
+      }
+    }
+
+    const batch = writeBatch(db);
+    orderedGearIds.forEach((id, index) => {
+      const docRef = doc(db, GEARS_COLLECTION, id);
+      batch.update(docRef, { order: index + 1 });
+    });
+
+    await batch.commit();
+    return { success: true };
+  } catch (error) {
+    console.error('[GuitarByQuang] Lỗi khi cập nhật lại toàn bộ thứ tự đồ nghề:', error);
+    return { success: false, error: 'Không thể lưu vị trí đồ nghề: ' + (error.message || error) };
   }
 }
 
