@@ -298,25 +298,13 @@
           </div>
 
           <!-- Branch A: Miễn Phí → Link Video Tab -->
-          <div id="branch-free" class="space-y-2">
-            <label class="font-bold text-[#1A1614] block">Link Video Tab / Tài liệu (targetUrl)</label>
-            <div class="flex gap-2">
-              <input type="text" id="form-targetUrl" placeholder="https://youtu.be/... hoặc link Drive" class="flex-1 px-3.5 py-2.5 rounded-xl bg-white border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:outline-none focus:border-terracotta transition-all" />
-              <button type="button" id="upload-tab-btn" title="Tải video từ máy lên Firebase Storage"
-                class="flex-shrink-0 px-3.5 py-2 rounded-xl bg-[#EAE4DC] hover:bg-[#DDD6CD] border-2 border-[#D6CFC4] text-[#3A332C] font-black text-xs flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap">
-                📁 Upload
-              </button>
-              <input type="file" id="upload-tab-file" accept="video/*,audio/*,.pdf" class="hidden" />
-            </div>
-            <div id="upload-tab-progress" class="hidden">
-              <div class="flex items-center gap-2 text-[11px] text-[#5C5147] font-semibold">
-                <div class="w-3 h-3 border-2 border-terracotta border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
-                <span id="upload-tab-progress-text">Đang tải lên... 0%</span>
-              </div>
-              <div class="mt-1.5 h-1.5 bg-[#EAE4DC] rounded-full overflow-hidden">
-                <div id="upload-tab-bar" class="h-full bg-terracotta rounded-full transition-all duration-300" style="width:0%"></div>
-              </div>
-            </div>
+          <div id="branch-free" class="space-y-1.5">
+            <label class="font-bold text-[#1A1614] block">Link Video Tab / File Tab (targetUrl)</label>
+            <input type="text" id="form-targetUrl" placeholder="Ví dụ: assets/ten-video.mp4 hoặc link YouTube/Drive" class="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:outline-none focus:border-terracotta transition-all" />
+            <p class="text-[11px] text-[#70655B] font-semibold flex items-center gap-1.5">
+              <span>💡</span>
+              <span>Gợi ý: Nhập <code class="bg-[#EAE4DC] px-1 py-0.5 rounded font-mono text-[10px]">assets/ten-video.mp4</code> nếu để trong máy, hoặc dán link YouTube/Drive.</span>
+            </p>
           </div>
 
           <!-- Branch B: Trả Phí → Giá tiền -->
@@ -348,24 +336,12 @@
             <label for="form-hasDemo" class="font-black text-[#1A1614] cursor-pointer select-none">Có Video Demo (preview clip ngắn)</label>
           </div>
           <div id="demo-url-row" class="space-y-1.5">
-            <label class="font-bold text-[#1A1614] block">Link Video Demo</label>
-            <div class="flex gap-2">
-              <input type="text" id="form-videoDemo" placeholder="assets/demo.mp4 hoặc URL YouTube/Cloud" class="flex-1 px-3.5 py-2.5 rounded-xl bg-white border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:outline-none focus:border-terracotta transition-all" />
-              <button type="button" id="upload-demo-btn" title="Tải video demo từ máy lên Firebase Storage"
-                class="flex-shrink-0 px-3.5 py-2 rounded-xl bg-[#EAE4DC] hover:bg-[#DDD6CD] border-2 border-[#D6CFC4] text-[#3A332C] font-black text-xs flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap">
-                📁 Upload
-              </button>
-              <input type="file" id="upload-demo-file" accept="video/*" class="hidden" />
-            </div>
-            <div id="upload-demo-progress" class="hidden">
-              <div class="flex items-center gap-2 text-[11px] text-[#5C5147] font-semibold">
-                <div class="w-3 h-3 border-2 border-terracotta border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
-                <span id="upload-demo-progress-text">Đang tải lên... 0%</span>
-              </div>
-              <div class="mt-1.5 h-1.5 bg-[#EAE4DC] rounded-full overflow-hidden">
-                <div id="upload-demo-bar" class="h-full bg-terracotta rounded-full transition-all duration-300" style="width:0%"></div>
-              </div>
-            </div>
+            <label class="font-bold text-[#1A1614] block">Link / Đường dẫn Video Demo</label>
+            <input type="text" id="form-videoDemo" placeholder="Ví dụ: assets/resg1ctkdemo.mp4 hoặc link YouTube" class="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:outline-none focus:border-terracotta transition-all" />
+            <p class="text-[11px] text-[#70655B] font-semibold flex items-center gap-1.5">
+              <span>💡</span>
+              <span>Gợi ý: Nhập <code class="bg-[#EAE4DC] px-1 py-0.5 rounded font-mono text-[10px]">assets/ten-video.mp4</code> hoặc copy path từ máy dán vào (hệ thống tự lấy <code class="bg-[#EAE4DC] px-1 py-0.5 rounded font-mono text-[10px]">assets/...</code>).</span>
+            </p>
           </div>
         </div>
 
@@ -413,26 +389,14 @@
           </div>
         </div>
 
-        <!-- Row 2: Hình ảnh & Nút Upload -->
+        <!-- Row 2: Hình ảnh sản phẩm -->
         <div class="space-y-1.5">
-          <label class="font-bold text-[#1A1614] block">Hình Ảnh Sản Phẩm (URL hoặc Tải lên từ máy)</label>
-          <div class="flex gap-2">
-            <input type="text" id="form-gear-image" placeholder="assets/clover.jpg hoặc URL ảnh" class="flex-1 px-3.5 py-2.5 rounded-xl bg-white border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:outline-none focus:border-terracotta transition-all" />
-            <button type="button" id="upload-gear-img-btn" title="Tải ảnh lên Firebase Storage"
-              class="flex-shrink-0 px-3.5 py-2 rounded-xl bg-[#EAE4DC] hover:bg-[#DDD6CD] border-2 border-[#D6CFC4] text-[#3A332C] font-black text-xs flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap">
-              📁 Upload Ảnh
-            </button>
-            <input type="file" id="upload-gear-img-file" accept="image/*" class="hidden" />
-          </div>
-          <div id="upload-gear-img-progress" class="hidden">
-            <div class="flex items-center gap-2 text-[11px] text-[#5C5147] font-semibold">
-              <div class="w-3 h-3 border-2 border-terracotta border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
-              <span id="upload-gear-img-progress-text">Đang tải lên... 0%</span>
-            </div>
-            <div class="mt-1.5 h-1.5 bg-[#EAE4DC] rounded-full overflow-hidden">
-              <div id="upload-gear-img-bar" class="h-full bg-terracotta rounded-full transition-all duration-300" style="width:0%"></div>
-            </div>
-          </div>
+          <label class="font-bold text-[#1A1614] block">Hình Ảnh Sản Phẩm (Đường dẫn hoặc Link online)</label>
+          <input type="text" id="form-gear-image" placeholder="Ví dụ: assets/clover.jpg hoặc link ảnh online" class="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:outline-none focus:border-terracotta transition-all" />
+          <p class="text-[11px] text-[#70655B] font-semibold flex items-center gap-1.5">
+            <span>💡</span>
+            <span>Gợi ý: Copy path file ảnh trong máy dán vào đây (hệ thống tự lấy <code class="bg-[#EAE4DC] px-1 py-0.5 rounded font-mono text-[10px]">assets/ten-anh.jpg</code>), hoặc dán link ảnh.</span>
+          </p>
         </div>
 
         <!-- Row 3: Mô tả chi tiết -->

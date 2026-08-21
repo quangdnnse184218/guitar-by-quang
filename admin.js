@@ -5,18 +5,42 @@
  * - CRUD Video Tab (songs collection)
  * - CRUD Bo Do Nghe (gears collection)
  * - Tab Switcher giua Kho Tab va Bo Do Nghe
- * - Upload Media (Video & Hinh Anh) qua Firebase Storage voi Progress Bar
+ * - Auto-Clean Media Path: Tu dong chuan hoa khi copy path file tu may (VD: "D:\My_guitar_web\assets\capo.jpg" -> assets/capo.jpg)
  */
 
 import { onAuthChange, logoutAdmin } from './firebase-auth-service.js';
 import {
   fetchAllSongs, createSong, updateSong, deleteSong,
   fetchAllGears, createGear, updateGear, deleteGear,
-  DEFAULT_GEARS, uploadMediaFile
+  DEFAULT_GEARS
 } from './firebase-service.js';
 
 let currentSongsList = [];
 let currentGearsList = [];
+
+// ============================================================
+// AUTO-CLEAN PATH HELPER
+// Tu dong bien: "D:\My_guitar_web\assets\capo.jpg" -> "assets/capo.jpg"
+// ============================================================
+function cleanMediaPath(rawPath) {
+  if (!rawPath) return '';
+  let str = rawPath.trim();
+  
+  // Xoa dau ngoac kep/don o 2 dau
+  str = str.replace(/^["']|["']$/g, '').trim();
+  
+  // Chuyen tat ca dau gach cheo nguoc \ thanh /
+  str = str.replace(/\\/g, '/');
+
+  // Neu nguoi dung copy path chua thu muc assets/ -> tu dong cat lay tu assets/...
+  const lower = str.toLowerCase();
+  const assetsIdx = lower.indexOf('assets/');
+  if (assetsIdx !== -1) {
+    str = str.substring(assetsIdx);
+  }
+
+  return str;
+}
 
 // Auto-computed defaults theo loai bai
 const FREE_DEFAULTS = {
@@ -380,56 +404,27 @@ window.handleDeleteGear = async function(gearId, gearTitle) {
 };
 
 // ============================================================
-// UPLOAD HELPER WITH PROGRESS
-// ============================================================
-function setupUploadButton(btnId, fileInputId, urlInputId, progressId, progressTextId, progressBarId, folder) {
-  const btn       = document.getElementById(btnId);
-  const fileInput = document.getElementById(fileInputId);
-  const urlInput  = document.getElementById(urlInputId);
-  const progressWrapper = document.getElementById(progressId);
-  const progressText    = document.getElementById(progressTextId);
-  const progressBar     = document.getElementById(progressBarId);
-
-  if (!btn || !fileInput) return;
-
-  btn.addEventListener('click', () => fileInput.click());
-
-  fileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (progressWrapper) progressWrapper.classList.remove('hidden');
-    if (progressText) progressText.textContent = 'Dang tai len... 0%';
-    if (progressBar)  progressBar.style.width = '0%';
-    btn.disabled = true;
-    btn.textContent = 'dang tai...';
-
-    const result = await uploadMediaFile(file, folder, (pct) => {
-      if (progressText) progressText.textContent = 'Dang tai len... ' + pct + '%';
-      if (progressBar)  progressBar.style.width = pct + '%';
-    });
-
-    btn.disabled = false;
-    btn.textContent = folder === 'images' ? 'Upload Anh' : 'Upload';
-    fileInput.value = '';
-
-    if (result.success) {
-      if (urlInput) urlInput.value = result.url;
-      if (progressWrapper) progressWrapper.classList.add('hidden');
-      showAdminToast('Upload thanh cong! URL da duoc dien tu dong');
-    } else {
-      if (progressWrapper) progressWrapper.classList.add('hidden');
-      showAdminToast(result.error || 'Upload that bai, thu lai nhe.', false);
-    }
-  });
-}
-
-// ============================================================
 // 4. DOM READY EVENT LISTENERS
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   loadSongs();
   loadGears();
+
+  // Tu dong chuan hoa duong dan khi user nhap/dan vao cac o input
+  const autoCleanInputs = ['form-videoDemo', 'form-targetUrl', 'form-gear-image'];
+  autoCleanInputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('blur', (e) => {
+        e.target.value = cleanMediaPath(e.target.value);
+      });
+      el.addEventListener('paste', () => {
+        setTimeout(() => {
+          el.value = cleanMediaPath(el.value);
+        }, 10);
+      });
+    }
+  });
 
   // Tab Switcher (Video Tab vs Bo Do Nghe)
   const tabNavSongs   = document.getElementById('tab-nav-songs');
@@ -516,12 +511,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (toggleFreeBtn) toggleFreeBtn.addEventListener('click', () => setTabType(true));
   if (togglePaidBtn) togglePaidBtn.addEventListener('click', () => setTabType(false));
 
-  // Upload Video Demo & Video Tab cho Song
-  setupUploadButton('upload-demo-btn', 'upload-demo-file', 'form-videoDemo',
-    'upload-demo-progress', 'upload-demo-progress-text', 'upload-demo-bar', 'videos');
-  setupUploadButton('upload-tab-btn', 'upload-tab-file', 'form-targetUrl',
-    'upload-tab-progress', 'upload-tab-progress-text', 'upload-tab-bar', 'videos');
-
   // Submit Form Song
   const songForm = document.getElementById('song-form');
   if (songForm) {
@@ -560,7 +549,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const priceVal          = isFree ? 0 : (Number(document.getElementById('form-price').value) || 239000);
       const priceFormattedVal = isFree ? '0d' : (document.getElementById('form-priceFormatted').value.trim() || '239.000d');
       const discountNoteVal   = isFree ? '' : (document.getElementById('form-discountNote').value.trim());
-      const targetUrlVal      = isFree ? (document.getElementById('form-targetUrl').value.trim()) : '';
+      const targetUrlVal      = isFree ? cleanMediaPath(document.getElementById('form-targetUrl').value) : '';
+      const videoDemoVal      = cleanMediaPath(document.getElementById('form-videoDemo').value);
 
       const songData = {
         title,
@@ -573,7 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tempo:          document.getElementById('form-tempo').value.trim() || '~95 BPM',
         description:    document.getElementById('form-description').value.trim(),
         hasDemo:        document.getElementById('form-hasDemo').checked,
-        videoDemo:      document.getElementById('form-videoDemo').value.trim(),
+        videoDemo:      videoDemoVal,
         price:          priceVal,
         priceFormatted: priceFormattedVal,
         discountNote:   discountNoteVal,
@@ -659,10 +649,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Upload Anh cho Gear
-  setupUploadButton('upload-gear-img-btn', 'upload-gear-img-file', 'form-gear-image',
-    'upload-gear-img-progress', 'upload-gear-img-progress-text', 'upload-gear-img-bar', 'images');
-
   // Submit Form Gear
   const gearForm = document.getElementById('gear-form');
   if (gearForm) {
@@ -681,7 +667,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const gearData = {
         title,
         category:    document.getElementById('form-gear-category').value.trim() || 'THIET BI',
-        image:       document.getElementById('form-gear-image').value.trim() || 'assets/clover.jpg',
+        image:       cleanMediaPath(document.getElementById('form-gear-image').value) || 'assets/clover.jpg',
         description: document.getElementById('form-gear-description').value.trim(),
         buyUrl:      document.getElementById('form-gear-buyUrl').value.trim(),
         buyText:     document.getElementById('form-gear-buyText').value.trim() || 'Mua ngay',
