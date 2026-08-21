@@ -5,7 +5,7 @@
  * Có initScrollSpy phiên bản trang chủ (không map kho-tab → nav active).
  */
 
-import { fetchAllSongs, fetchAllGears } from './firebase-service.js';
+import { fetchAllSongs, fetchAllGears, DEFAULT_GEARS } from './firebase-service.js';
 import {
   computeNormalizedFields,
   renderSongCard,
@@ -35,7 +35,7 @@ function renderGears(gears) {
     const cleanTitle = (gear.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
     return `
-      <div class="reveal flex-shrink-0 w-[74vw] max-w-[280px] snap-center bg-white border-2 border-[#D8CEBF] rounded-3xl p-4 sm:p-5 shadow-soft hover:shadow-float hover:border-terracotta-border transition-all duration-300 active:scale-95 flex flex-col justify-between gap-3.5 group md:w-auto md:max-w-none">
+      <div class="flex-shrink-0 w-[74vw] max-w-[280px] snap-center bg-white border-2 border-[#D8CEBF] rounded-3xl p-4 sm:p-5 shadow-soft hover:shadow-float hover:border-terracotta-border transition-all duration-300 active:scale-95 flex flex-col justify-between gap-3.5 group md:w-auto md:max-w-none">
         <div class="space-y-3">
           <div onclick="openImageModal('${gear.image || 'assets/clover.jpg'}', '${cleanTitle}', '${cleanDesc}')" class="w-full aspect-[4/3] rounded-2xl bg-[#EDE5D8] flex items-center justify-center p-3 border border-charcoal-border/40 shadow-inner overflow-hidden group/img relative cursor-zoom-in group-hover:scale-[1.02] transition-transform duration-300" title="Click để phóng to ảnh">
             <img src="${gear.image || 'assets/clover.jpg'}" alt="${cleanTitle}" class="w-full h-full object-contain mix-blend-multiply" onerror="this.src='assets/clover.jpg'" />
@@ -55,7 +55,13 @@ function renderGears(gears) {
       </div>
     `;
   }).join('');
+
+  // Refresh ScrollTrigger nếu đang dùng GSAP
+  if (typeof ScrollTrigger !== 'undefined') {
+    ScrollTrigger.refresh();
+  }
 }
+
 
 
 // ==========================================================================
@@ -285,22 +291,9 @@ function initSmoothFadeUp() {
   }
 
   // 4 Card đồ nghề (#about) — Fade-up stagger
-  const gearCards = document.querySelectorAll('#about .flex.overflow-x-auto > div');
-  if (gearCards.length > 0) {
-    gsap.from(gearCards, {
-      opacity: 0,
-      y: 30,
-      stagger: 0.1,
-      duration: 0.6,
-      ease: 'power2.out',
-      clearProps: 'transform,opacity',
-      scrollTrigger: {
-        trigger: '#about .flex.overflow-x-auto',
-        start: 'top 85%',
-        once: true
-      }
-    });
-  }
+  // NOTE: Gear cards được render động bởi JS (renderGears) sau khi fetch Firestore.
+  // ScrollTrigger.refresh() sẽ được gọi sau khi renderGears() hoàn tất.
+  // Ở đây chỉ đặt ScrollTrigger trên container, không chạy trước khi có DOM.
 
   // 4. Section FAQ (#faq) — Fade-up stagger
   const faqItems = document.querySelectorAll('#faq details.faq-item');
@@ -389,9 +382,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const gears = await fetchAllGears();
     if (gears && gears.length > 0) {
       renderGears(gears);
+    } else {
+      renderGears(DEFAULT_GEARS);
     }
   } catch (err) {
-    console.warn('[GuitarByQuang] Không load được gears động, giữ nguyên fallback tĩnh:', err);
+    console.warn('[GuitarByQuang] Không load được gears động, dùng DEFAULT_GEARS:', err);
+    renderGears(DEFAULT_GEARS);
   }
 
   // Init modal listeners (checkout, demo, copy buttons, Escape)

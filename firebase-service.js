@@ -371,6 +371,8 @@ async function checkGearIdExists(id) {
 
 /**
  * Thêm món đồ nghề mới
+ * Nếu Firestore collection `gears` đang rỗng, tự động nạp 4 món DEFAULT_GEARS trước
+ * để người dùng không bị mất 4 món ban đầu khi thêm món mới.
  * @param {Object} gearData
  * @returns {Promise<{success: boolean, id?: string, error?: string}>}
  */
@@ -378,6 +380,16 @@ export async function createGear(gearData) {
   try {
     if (!gearData || !gearData.title) {
       return { success: false, error: 'Tên món đồ nghề không được để trống.' };
+    }
+
+    // Kiểm tra nếu collection rỗng thì tự động nạp 4 món mẫu trước
+    const checkSnap = await getDocs(collection(db, GEARS_COLLECTION));
+    if (checkSnap.empty) {
+      for (const item of DEFAULT_GEARS) {
+        const itemData = { ...item };
+        delete itemData.id;
+        await setDoc(doc(db, GEARS_COLLECTION, item.id), itemData);
+      }
     }
 
     let baseSlug = generateSlugId(gearData.title);
@@ -404,7 +416,7 @@ export async function createGear(gearData) {
     return { success: true, id: targetId };
   } catch (error) {
     console.error('[GuitarByQuang] Lỗi khi tạo gear:', error);
-    return { success: false, error: 'Không thể thêm món đồ nghề. Vui lòng thử lại.' };
+    return { success: false, error: 'Không thể thêm món đồ nghề: ' + (error.message || error) };
   }
 }
 
@@ -418,17 +430,27 @@ export async function updateGear(id, gearData) {
   try {
     if (!id) return { success: false, error: 'Không tìm thấy ID món đồ nghề.' };
 
+    // Nếu collection rỗng (đang hiển thị default nhưng chưa lưu Firestore)
+    const checkSnap = await getDocs(collection(db, GEARS_COLLECTION));
+    if (checkSnap.empty) {
+      for (const item of DEFAULT_GEARS) {
+        const itemData = { ...item };
+        delete itemData.id;
+        await setDoc(doc(db, GEARS_COLLECTION, item.id), itemData);
+      }
+    }
+
     const dataToSave = { ...gearData };
     delete dataToSave.id;
 
     if (dataToSave.order !== undefined) dataToSave.order = Number(dataToSave.order);
 
     const docRef = doc(db, GEARS_COLLECTION, id);
-    await updateDoc(docRef, dataToSave);
+    await setDoc(docRef, dataToSave, { merge: true });
     return { success: true };
   } catch (error) {
     console.error(`[GuitarByQuang] Lỗi cập nhật gear id="${id}":`, error);
-    return { success: false, error: 'Không thể cập nhật món đồ nghề. Vui lòng thử lại.' };
+    return { success: false, error: 'Không thể cập nhật món đồ nghề: ' + (error.message || error) };
   }
 }
 
@@ -440,12 +462,25 @@ export async function updateGear(id, gearData) {
 export async function deleteGear(id) {
   try {
     if (!id) return { success: false, error: 'Không tìm thấy ID món đồ nghề để xóa.' };
+
+    const checkSnap = await getDocs(collection(db, GEARS_COLLECTION));
+    if (checkSnap.empty) {
+      for (const item of DEFAULT_GEARS) {
+        if (item.id !== id) {
+          const itemData = { ...item };
+          delete itemData.id;
+          await setDoc(doc(db, GEARS_COLLECTION, item.id), itemData);
+        }
+      }
+      return { success: true };
+    }
+
     const docRef = doc(db, GEARS_COLLECTION, id);
     await deleteDoc(docRef);
     return { success: true };
   } catch (error) {
     console.error(`[GuitarByQuang] Lỗi xóa gear id="${id}":`, error);
-    return { success: false, error: 'Không thể xóa món đồ nghề. Vui lòng thử lại.' };
+    return { success: false, error: 'Không thể xóa món đồ nghề: ' + (error.message || error) };
   }
 }
 
