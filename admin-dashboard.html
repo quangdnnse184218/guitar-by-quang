@@ -53,88 +53,163 @@
   <!-- Main Content Area -->
   <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-8 py-8 space-y-6">
 
-    <!-- Header & Action Bar -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b-2 border-[#D6CFC4]">
+    <!-- Dashboard Top Bar: Title & Navigation Tabs -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b-2 border-[#D6CFC4]">
       <div>
-        <h1 class="text-2xl sm:text-3xl font-black text-[#1A1614] tracking-tight">Quản Lý Kho Video Tab</h1>
-        <p class="text-xs sm:text-sm text-[#70655B] font-semibold mt-0.5">Thêm mới, chỉnh sửa thông tin hoặc xóa bài hát trên Firestore Database</p>
+        <h1 class="text-2xl sm:text-3xl font-black text-[#1A1614] tracking-tight">Bảng Điều Khiển Admin</h1>
+        <p class="text-xs sm:text-sm text-[#70655B] font-semibold mt-0.5">Quản lý kho bài hát, video tab và bộ đồ nghề hiển thị trên trang chủ</p>
       </div>
 
-      <button id="add-song-btn" class="px-5 py-2.5 rounded-full bg-warm-gradient hover:brightness-105 text-white font-black text-xs sm:text-sm transition-all shadow-glow active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-        <span>Thêm Bài Hát Mới</span>
-      </button>
-    </div>
-
-    <!-- Quick Stats Cards (High Contrast) -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="bg-white border-2 border-[#D6CFC4] shadow-md rounded-2xl p-5 flex items-center justify-between">
-        <div>
-          <span class="text-xs font-bold text-[#70655B] uppercase tracking-wider block">Tổng số bài hát</span>
-          <span id="stat-total" class="text-3xl font-black text-[#1A1614] mt-1 block">0</span>
-        </div>
-        <div class="w-12 h-12 rounded-2xl bg-[#F4EFEA] text-charcoal border-2 border-[#D6CFC4] flex items-center justify-center text-2xl shadow-inner">🎸</div>
-      </div>
-      <div class="bg-white border-2 border-[#D6CFC4] shadow-md rounded-2xl p-5 flex items-center justify-between">
-        <div>
-          <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider block">Bài hát Miễn phí</span>
-          <span id="stat-free" class="text-3xl font-black text-emerald-800 mt-1 block">0</span>
-        </div>
-        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 border-2 border-emerald-300 flex items-center justify-center text-2xl shadow-inner">✨</div>
-      </div>
-      <div class="bg-white border-2 border-[#D6CFC4] shadow-md rounded-2xl p-5 flex items-center justify-between">
-        <div>
-          <span class="text-xs font-bold text-amber-900 uppercase tracking-wider block">Bài hát Trả phí</span>
-          <span id="stat-paid" class="text-3xl font-black text-terracotta mt-1 block">0</span>
-        </div>
-        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-terracotta border-2 border-amber-300 flex items-center justify-center text-2xl shadow-inner">💎</div>
+      <!-- Navigation Tabs Switcher -->
+      <div class="inline-flex p-1 rounded-2xl bg-white border-2 border-[#D6CFC4] shadow-xs">
+        <button type="button" id="tab-nav-songs" class="px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer bg-warm-gradient text-white shadow-xs">
+          🎸 Kho Video Tab
+        </button>
+        <button type="button" id="tab-nav-gears" class="px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer text-[#5C5147] hover:text-[#1A1614] hover:bg-[#F4EFEA]">
+          🎛️ Bộ Đồ Nghề
+        </button>
       </div>
     </div>
 
-    <!-- Search & Filter Controls -->
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border-2 border-[#D6CFC4] shadow-md">
-      <div class="relative w-full sm:w-80">
-        <input
-          type="text"
-          id="admin-search"
-          placeholder="Tìm theo tên bài hát hoặc ID..."
-          class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-xs font-bold text-[#1A1614] placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-all"
-        />
-        <svg class="w-4 h-4 text-[#8C827A] absolute left-3 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <!-- ============================================================ -->
+    <!-- VIEW 1: QUẢN LÝ KHO VIDEO TAB                               -->
+    <!-- ============================================================ -->
+    <div id="section-songs" class="space-y-6">
+      <!-- Action Bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-black text-[#1A1614]">Danh Sách Video Tab</h2>
+          <p class="text-xs text-[#70655B] font-semibold">Tự động đồng bộ với Firestore collection <code class="bg-[#EAE4DC] px-1.5 py-0.5 rounded font-mono text-[11px]">songs</code></p>
+        </div>
+
+        <button id="add-song-btn" class="px-5 py-2.5 rounded-full bg-warm-gradient hover:brightness-105 text-white font-black text-xs sm:text-sm transition-all shadow-glow active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+          <span>Thêm Bài Hát Mới</span>
+        </button>
       </div>
 
-      <button id="refresh-btn" class="px-4 py-2.5 rounded-xl bg-[#F4EFEA] hover:bg-[#EAE4DC] text-xs font-black text-[#3A332C] border-2 border-[#D6CFC4] transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs">
-        <svg class="w-3.5 h-3.5 text-[#5C5147]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        <span>Làm mới danh sách</span>
-      </button>
+      <!-- Quick Stats Cards (High Contrast) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white border-2 border-[#D6CFC4] shadow-md rounded-2xl p-5 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-[#70655B] uppercase tracking-wider block">Tổng số bài hát</span>
+            <span id="stat-total" class="text-3xl font-black text-[#1A1614] mt-1 block">0</span>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-[#F4EFEA] text-charcoal border-2 border-[#D6CFC4] flex items-center justify-center text-2xl shadow-inner">🎸</div>
+        </div>
+        <div class="bg-white border-2 border-[#D6CFC4] shadow-md rounded-2xl p-5 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider block">Bài hát Miễn phí</span>
+            <span id="stat-free" class="text-3xl font-black text-emerald-800 mt-1 block">0</span>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 border-2 border-emerald-300 flex items-center justify-center text-2xl shadow-inner">✨</div>
+        </div>
+        <div class="bg-white border-2 border-[#D6CFC4] shadow-md rounded-2xl p-5 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-amber-900 uppercase tracking-wider block">Bài hát Trả phí</span>
+            <span id="stat-paid" class="text-3xl font-black text-terracotta mt-1 block">0</span>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-amber-50 text-terracotta border-2 border-amber-300 flex items-center justify-center text-2xl shadow-inner">💎</div>
+        </div>
+      </div>
+
+      <!-- Search & Filter Controls -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border-2 border-[#D6CFC4] shadow-md">
+        <div class="relative w-full sm:w-80">
+          <input
+            type="text"
+            id="admin-search"
+            placeholder="Tìm theo tên bài hát hoặc ID..."
+            class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-xs font-bold text-[#1A1614] placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-all"
+          />
+          <svg class="w-4 h-4 text-[#8C827A] absolute left-3 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+
+        <button id="refresh-btn" class="px-4 py-2.5 rounded-xl bg-[#F4EFEA] hover:bg-[#EAE4DC] text-xs font-black text-[#3A332C] border-2 border-[#D6CFC4] transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs">
+          <svg class="w-3.5 h-3.5 text-[#5C5147]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span>Làm mới danh sách</span>
+        </button>
+      </div>
+
+      <!-- Songs Table (High Contrast & Clear Boundaries) -->
+      <div class="bg-white border-2 border-[#D6CFC4] rounded-2xl overflow-hidden shadow-md">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-[#1A1614]">
+            <thead class="bg-[#E5DCD0]/80 text-[#3A332C] font-extrabold text-xs uppercase tracking-wider border-b-2 border-[#D6CFC4]">
+              <tr>
+                <th class="py-4 px-4 w-12 text-center">STT</th>
+                <th class="py-4 px-4">Tên Bài Hát / ID</th>
+                <th class="py-4 px-4">Thể Loại</th>
+                <th class="py-4 px-4">Độ Khó</th>
+                <th class="py-4 px-4">Phân Loại</th>
+                <th class="py-4 px-4">Giá Bán</th>
+                <th class="py-4 px-4 text-right">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="songs-table-body" class="divide-y divide-[#E3DBD0] font-medium">
+              <tr>
+                <td colspan="7" class="py-8 text-center text-[#70655B] font-bold">
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-terracotta border-t-transparent rounded-full animate-spin"></div>
+                    <span>Đang tải dữ liệu từ Firestore...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <!-- Songs Table (High Contrast & Clear Boundaries) -->
-    <div class="bg-white border-2 border-[#D6CFC4] rounded-2xl overflow-hidden shadow-md">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs text-[#1A1614]">
-          <thead class="bg-[#E5DCD0]/80 text-[#3A332C] font-extrabold text-xs uppercase tracking-wider border-b-2 border-[#D6CFC4]">
-            <tr>
-              <th class="py-4 px-4 w-12 text-center">STT</th>
-              <th class="py-4 px-4">Tên Bài Hát / ID</th>
-              <th class="py-4 px-4">Thể Loại</th>
-              <th class="py-4 px-4">Độ Khó</th>
-              <th class="py-4 px-4">Phân Loại</th>
-              <th class="py-4 px-4">Giá Bán</th>
-              <th class="py-4 px-4 text-right">Thao Tác</th>
-            </tr>
-          </thead>
-          <tbody id="songs-table-body" class="divide-y divide-[#E3DBD0] font-medium">
-            <tr>
-              <td colspan="7" class="py-8 text-center text-[#70655B] font-bold">
-                <div class="flex items-center justify-center gap-2">
-                  <div class="w-4 h-4 border-2 border-terracotta border-t-transparent rounded-full animate-spin"></div>
-                  <span>Đang tải dữ liệu từ Firestore...</span>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <!-- ============================================================ -->
+    <!-- VIEW 2: QUẢN LÝ BỘ ĐỒ NGHÈ (GEARS)                         -->
+    <!-- ============================================================ -->
+    <div id="section-gears" class="space-y-6 hidden">
+      <!-- Action Bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-black text-[#1A1614]">Bộ Đồ Nghề Đang Dùng</h2>
+          <p class="text-xs text-[#70655B] font-semibold">Tự động đồng bộ với Firestore collection <code class="bg-[#EAE4DC] px-1.5 py-0.5 rounded font-mono text-[11px]">gears</code> hiển thị ở trang chủ</p>
+        </div>
+
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <button id="seed-gears-btn" class="px-4 py-2 rounded-full bg-[#F4EFEA] hover:bg-[#EAE4DC] text-[#3A332C] border-2 border-[#D6CFC4] font-black text-xs transition-all shadow-xs flex items-center gap-1.5 cursor-pointer" title="Nạp 4 món đồ nghề mặc định ban đầu nếu danh sách trống">
+            <span>🔄 Nạp 4 Món Mẫu</span>
+          </button>
+          <button id="add-gear-btn" class="px-5 py-2.5 rounded-full bg-warm-gradient hover:brightness-105 text-white font-black text-xs sm:text-sm transition-all shadow-glow active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+            <span>Thêm Món Đồ Nghề</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Gears Table -->
+      <div class="bg-white border-2 border-[#D6CFC4] rounded-2xl overflow-hidden shadow-md">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-[#1A1614]">
+            <thead class="bg-[#E5DCD0]/80 text-[#3A332C] font-extrabold text-xs uppercase tracking-wider border-b-2 border-[#D6CFC4]">
+              <tr>
+                <th class="py-4 px-4 w-12 text-center">STT</th>
+                <th class="py-4 px-4 w-16 text-center">Hình Ảnh</th>
+                <th class="py-4 px-4">Tên Món Đồ & ID</th>
+                <th class="py-4 px-4">Phân Loại / Tag</th>
+                <th class="py-4 px-4">Link Mua / Ghi Chú</th>
+                <th class="py-4 px-4 w-16 text-center">Thứ Tự</th>
+                <th class="py-4 px-4 text-right">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="gears-table-body" class="divide-y divide-[#E3DBD0] font-medium">
+              <tr>
+                <td colspan="7" class="py-8 text-center text-[#70655B] font-bold">
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-terracotta border-t-transparent rounded-full animate-spin"></div>
+                    <span>Đang tải danh sách đồ nghề từ Firestore...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -302,6 +377,103 @@
           <button type="submit" id="save-song-btn" class="px-6 py-2.5 rounded-full bg-warm-gradient hover:brightness-105 text-white font-bold text-xs transition-all shadow-glow cursor-pointer flex items-center gap-2">
             <span id="save-btn-text">Lưu Bài Hát</span>
             <div id="save-spinner" class="hidden w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- MODAL: THÊM / SỬA MÓN ĐỒ NGHÈ (Gear Modal) -->
+  <div id="gear-form-modal" role="dialog" aria-modal="true" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-charcoal/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="modal-dialog relative w-full max-w-xl bg-white text-[#1A1614] rounded-3xl p-6 sm:p-8 shadow-2xl border-2 border-[#D6CFC4] max-h-[92vh] overflow-y-auto scale-95 transition-transform duration-300">
+
+      <button id="close-gear-modal-btn" class="absolute top-5 right-5 p-2 rounded-full text-[#70655B] hover:text-[#1A1614] hover:bg-[#F4EFEA] transition-colors z-10 cursor-pointer" aria-label="Đóng form đồ nghề">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="space-y-1 mb-6">
+        <span class="text-xs font-mono font-bold uppercase tracking-wider text-terracotta">Firestore Collection: gears</span>
+        <h2 id="modal-gear-form-title" class="text-xl sm:text-2xl font-black text-[#1A1614]">Thêm Món Đồ Nghề Mới</h2>
+      </div>
+
+      <form id="gear-form" class="space-y-4 text-xs" novalidate>
+        <input type="hidden" id="form-gear-id" value="" />
+
+        <!-- Row 1: Tên món đồ & Phân loại -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div class="space-y-1.5">
+            <label class="font-bold text-[#1A1614] block">Tên Món Đồ Nghề <span class="text-terracotta">*</span></label>
+            <input type="text" id="form-gear-title" required placeholder="Ví dụ: Clover 914c Custom" class="w-full px-3.5 py-2.5 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-all" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="font-bold text-[#1A1614] block">Phân Loại / Tag</label>
+            <input type="text" id="form-gear-category" placeholder="GUITAR CHÍNH / MICROPHONE / DÂY ĐÀN..." value="GUITAR CHÍNH" class="w-full px-3.5 py-2.5 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-all" />
+          </div>
+        </div>
+
+        <!-- Row 2: Hình ảnh & Nút Upload -->
+        <div class="space-y-1.5">
+          <label class="font-bold text-[#1A1614] block">Hình Ảnh Sản Phẩm (URL hoặc Tải lên từ máy)</label>
+          <div class="flex gap-2">
+            <input type="text" id="form-gear-image" placeholder="assets/clover.jpg hoặc URL ảnh" class="flex-1 px-3.5 py-2.5 rounded-xl bg-white border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:outline-none focus:border-terracotta transition-all" />
+            <button type="button" id="upload-gear-img-btn" title="Tải ảnh lên Firebase Storage"
+              class="flex-shrink-0 px-3.5 py-2 rounded-xl bg-[#EAE4DC] hover:bg-[#DDD6CD] border-2 border-[#D6CFC4] text-[#3A332C] font-black text-xs flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap">
+              📁 Upload Ảnh
+            </button>
+            <input type="file" id="upload-gear-img-file" accept="image/*" class="hidden" />
+          </div>
+          <div id="upload-gear-img-progress" class="hidden">
+            <div class="flex items-center gap-2 text-[11px] text-[#5C5147] font-semibold">
+              <div class="w-3 h-3 border-2 border-terracotta border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
+              <span id="upload-gear-img-progress-text">Đang tải lên... 0%</span>
+            </div>
+            <div class="mt-1.5 h-1.5 bg-[#EAE4DC] rounded-full overflow-hidden">
+              <div id="upload-gear-img-bar" class="h-full bg-terracotta rounded-full transition-all duration-300" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: Mô tả chi tiết -->
+        <div class="space-y-1.5">
+          <label class="font-bold text-[#1A1614] block">Mô Tả Sản Phẩm</label>
+          <textarea id="form-gear-description" rows="3" placeholder="Mặt Sitka Spruce, lưng hông Rosewood. Tiếng mộc dày, âm bass ấm..." class="w-full px-3.5 py-2 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta"></textarea>
+        </div>
+
+        <!-- Row 4: Link mua hàng & Chữ nút mua -->
+        <div class="p-4 rounded-2xl bg-[#F8F5F0] border-2 border-[#D6CFC4] space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="space-y-1.5">
+              <label class="font-bold text-[#1A1614] block">Link Mua Hàng (Shopee / Affiliate / Tư Vấn)</label>
+              <input type="text" id="form-gear-buyUrl" placeholder="https://s.shopee.vn/..." class="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:outline-none focus:border-terracotta" />
+            </div>
+            <div class="space-y-1.5">
+              <label class="font-bold text-[#1A1614] block">Chữ Trên Nút Mua (Nếu có link)</label>
+              <input type="text" id="form-gear-buyText" placeholder="Mua trên Shopee" value="Mua trên Shopee" class="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:outline-none focus:border-terracotta" />
+            </div>
+          </div>
+
+          <div class="space-y-1.5 pt-1">
+            <label class="font-bold text-[#1A1614] block">Ghi Chú Chân Thẻ (Dùng khi không có link mua)</label>
+            <input type="text" id="form-gear-footerText" placeholder="Ví dụ: 'Cần mua đàn nhắn mình tư vấn giá ưu đãi nhé.'" class="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:outline-none focus:border-terracotta" />
+          </div>
+        </div>
+
+        <!-- Row 5: Thứ tự hiển thị -->
+        <div class="space-y-1.5">
+          <label class="font-bold text-[#1A1614] block">Thứ Tự Hiển Thị (1, 2, 3, 4...)</label>
+          <input type="number" id="form-gear-order" min="1" max="99" value="1" class="w-32 px-3.5 py-2 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold focus:bg-white focus:outline-none focus:border-terracotta" />
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="pt-4 flex items-center justify-end gap-3 border-t border-[#E6DFD5]">
+          <button type="button" id="cancel-gear-btn" class="px-5 py-2.5 rounded-full bg-[#F4EFEA] hover:bg-[#EAE4DC] text-[#4A423D] border border-[#E0D8CE] font-bold text-xs transition-colors cursor-pointer">
+            Hủy Bỏ
+          </button>
+          <button type="submit" id="save-gear-btn" class="px-6 py-2.5 rounded-full bg-warm-gradient hover:brightness-105 text-white font-bold text-xs transition-all shadow-glow cursor-pointer flex items-center gap-2">
+            <span id="save-gear-btn-text">Lưu Món Đồ Nghề</span>
+            <div id="save-gear-spinner" class="hidden w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
           </button>
         </div>
 

@@ -29,7 +29,7 @@
 }
 
 /* ========================================== */
-/* ACOUSTIC GUITAR & TRIANGLE TRAIL CURSOR   */
+/* ACOUSTIC GUITAR CUSTOM CURSOR              */
 /* ========================================== */
 
 @media (pointer: fine) {
@@ -97,21 +97,6 @@
     filter: drop-shadow(0 4px 10px rgba(193, 96, 47, 0.7));
   }
 
-  .triangle-trail-item {
-    position: fixed;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    z-index: 99998;
-    transform: translate(-50%, -50%);
-    will-change: transform, opacity;
-    transition: opacity 0.2s ease, filter 0.2s ease;
-  }
-
-  .cursor-hover-trail .triangle-trail-item {
-    filter: drop-shadow(0 0 4px rgba(224, 122, 63, 0.6));
-  }
-
   .cursor-hidden {
     opacity: 0 !important;
   }
@@ -119,8 +104,7 @@
 
 @media (pointer: coarse) {
   #cursor-guitar-container,
-  #cursor-guitar,
-  .triangle-trail-item {
+  #cursor-guitar {
     display: none !important;
   }
 }

@@ -786,7 +786,7 @@ export function initModalListeners() {
 }
 
 // ==========================================================================
-// 4. ACOUSTIC GUITAR & CONCENTRIC TRIANGLE TRAIL CURSOR
+// 4. ACOUSTIC GUITAR CUSTOM CURSOR
 // ==========================================================================
 
 export function initCustomCursor() {
@@ -813,7 +813,7 @@ export function initCustomCursor() {
     document.body.appendChild(container);
   }
 
-  // 1. Con trỏ chính: Cây đàn Acoustic Guitar
+  // Con trỏ chính: Cây đàn Acoustic Guitar sắc nét
   let guitarEl = document.getElementById('cursor-guitar');
   if (!guitarEl) {
     guitarEl = document.createElement('div');
@@ -835,99 +835,19 @@ export function initCustomCursor() {
     container.appendChild(guitarEl);
   }
 
-  // 2. Tạo 6 hạt đuôi tam giác lồng nhau
-  const TRAIL_COUNT = 6;
-  const trailPoints = [];
-  const trailElements = [];
-
-  const triangleSvg = `
-    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- Tam giác lớn ngoài -->
-      <polygon points="12,2 22,20 2,20" stroke="#C1602F" stroke-width="1.8" fill="rgba(193, 96, 47, 0.12)" stroke-linejoin="round"/>
-      <!-- Tam giác lồng bên trong -->
-      <polygon points="12,8 18,18 6,18" stroke="#E07A3F" stroke-width="1.4" fill="rgba(224, 122, 63, 0.35)" stroke-linejoin="round"/>
-      <!-- Tâm điểm -->
-      <circle cx="12" cy="14.5" r="1.2" fill="#C1602F"/>
-    </svg>
-  `;
-
-  for (let i = 0; i < TRAIL_COUNT; i++) {
-    const el = document.createElement('div');
-    el.className = 'triangle-trail-item cursor-hidden';
-    el.innerHTML = triangleSvg;
-    container.appendChild(el);
-    trailElements.push(el);
-
-    trailPoints.push({
-      x: -100,
-      y: -100,
-      scale: Math.max(0.25, 0.85 - (i * 0.12)),
-      opacity: Math.max(0.1, 0.85 - (i * 0.14)),
-      ease: 0.28 - (i * 0.025),
-      rotation: i * 15
-    });
-  }
-
-  let mouseX = -100;
-  let mouseY = -100;
-  let isMoving = false;
-
+  // Lắng nghe di chuyển chuột
   window.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-
-    guitarEl.style.left = `${mouseX}px`;
-    guitarEl.style.top = `${mouseY}px`;
+    guitarEl.style.left = `${e.clientX}px`;
+    guitarEl.style.top = `${e.clientY}px`;
     guitarEl.classList.remove('cursor-hidden');
-
-    trailElements.forEach(el => el.classList.remove('cursor-hidden'));
-
-    if (!isMoving) {
-      isMoving = true;
-      requestAnimationFrame(renderTrail);
-    }
   }, { passive: true });
-
-  function renderTrail() {
-    let leaderX = mouseX;
-    let leaderY = mouseY;
-    let hasDelta = false;
-
-    for (let i = 0; i < TRAIL_COUNT; i++) {
-      const p = trailPoints[i];
-      const el = trailElements[i];
-
-      p.x += (leaderX - p.x) * p.ease;
-      p.y += (leaderY - p.y) * p.ease;
-
-      el.style.left = `${p.x}px`;
-      el.style.top = `${p.y}px`;
-      el.style.transform = `translate(-50%, -50%) scale(${p.scale}) rotate(${p.rotation}deg)`;
-      el.style.opacity = p.opacity;
-
-      if (Math.abs(leaderX - p.x) > 0.1 || Math.abs(leaderY - p.y) > 0.1) {
-        hasDelta = true;
-      }
-
-      leaderX = p.x;
-      leaderY = p.y;
-    }
-
-    if (hasDelta) {
-      requestAnimationFrame(renderTrail);
-    } else {
-      isMoving = false;
-    }
-  }
 
   document.addEventListener('mouseleave', () => {
     guitarEl.classList.add('cursor-hidden');
-    trailElements.forEach(el => el.classList.add('cursor-hidden'));
   });
 
   document.addEventListener('mouseenter', () => {
     guitarEl.classList.remove('cursor-hidden');
-    trailElements.forEach(el => el.classList.remove('cursor-hidden'));
   });
 
   // Event Delegation để bắt hover cho tất cả element tương tác
@@ -935,7 +855,6 @@ export function initCustomCursor() {
     const target = e.target.closest('a, button, input, textarea, select, details, summary, [role="button"], .song-card, .gear-card, .cinema-3d-card, .cursor-pointer, .cursor-zoom-in');
     if (target) {
       guitarEl.classList.add('cursor-hover');
-      container.classList.add('cursor-hover-trail');
     }
   });
 
@@ -943,7 +862,6 @@ export function initCustomCursor() {
     const target = e.target.closest('a, button, input, textarea, select, details, summary, [role="button"], .song-card, .gear-card, .cinema-3d-card, .cursor-pointer, .cursor-zoom-in');
     if (target) {
       guitarEl.classList.remove('cursor-hover');
-      container.classList.remove('cursor-hover-trail');
     }
   });
 }

@@ -259,3 +259,178 @@ export function uploadMediaFile(file, folder = 'videos', onProgress) {
   });
 }
 
+
+// ==========================================================================
+// GEARS (BỘ ĐỒ NGHỀ) CRUD OPERATIONS
+// ==========================================================================
+
+const GEARS_COLLECTION = 'gears';
+
+export const DEFAULT_GEARS = [
+  {
+    id: 'gear-clover-914c',
+    category: 'GUITAR CHÍNH',
+    title: 'Clover 914c Custom',
+    image: 'assets/clover.jpg',
+    description: 'Mặt Sitka Spruce, lưng hông Rosewood. Tiếng mộc dày, âm bass ấm và action được căn rất êm tay.',
+    buyUrl: '',
+    buyText: '',
+    footerText: 'Cần mua đàn nhắn mình tư vấn giá ưu đãi nhé.',
+    order: 1
+  },
+  {
+    id: 'gear-akg-ara',
+    category: 'MICROPHONE THU ÂM',
+    title: 'AKG Ara C22 USB',
+    image: 'assets/akg.jpg',
+    description: 'Mic thu cắm cổng USB trực tiếp vào máy tính, thu âm mộc qua Audacity, chỉ chỉnh âm lượng chứ không can thiệp hiệu ứng.',
+    buyUrl: 'https://s.shopee.vn/3VjbUzpuHA',
+    buyText: 'Mua trên Shopee',
+    footerText: '',
+    order: 2
+  },
+  {
+    id: 'gear-elixir-bronze',
+    category: 'DÂY ĐÀN & PHỤ KIỆN',
+    title: 'Elixir Bronze (11-52)',
+    image: 'assets/elixer.jpg',
+    description: 'Dây phủ nanoweb bấm êm tay, lâu rỉ. Kẹp kèm Capo Shubb C1B bằng đồng chống phô nốt.',
+    buyUrl: 'https://s.shopee.vn/gPQ7oVDzX',
+    buyText: 'Mua trên Shopee',
+    footerText: '',
+    order: 3
+  },
+  {
+    id: 'gear-guitar-pro-8',
+    category: 'PHẦN MỀM SOẠN TAB',
+    title: 'Guitar Pro 8',
+    image: 'assets/gp8.jpg',
+    description: 'Phần mềm để mình viết tab, xuất file nhạc và căn chỉnh nhịp phách chi tiết trước khi quay video.',
+    buyUrl: '',
+    buyText: '',
+    footerText: 'Lên YouTube tìm cách tải Guitar Pro 8 là có nhé.',
+    order: 4
+  }
+];
+
+/**
+ * Lấy toàn bộ danh sách đồ nghề từ Firestore (fallback DEFAULT_GEARS nếu rỗng)
+ * @returns {Promise<Array>}
+ */
+export async function fetchAllGears() {
+  try {
+    const q = query(collection(db, GEARS_COLLECTION), orderBy('order', 'asc'));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      return DEFAULT_GEARS;
+    }
+
+    return snapshot.docs.map(docSnap => ({
+      id: docSnap.id,
+      ...docSnap.data()
+    }));
+  } catch (error) {
+    console.warn('[GuitarByQuang] Lỗi fetch gears từ Firestore, dùng DEFAULT_GEARS:', error);
+    return DEFAULT_GEARS;
+  }
+}
+
+/**
+ * Lấy chi tiết 1 món đồ nghề
+ * @param {string} id
+ * @returns {Promise<Object|null>}
+ */
+export async function fetchGearById(id) {
+  try {
+    const docRef = doc(db, GEARS_COLLECTION, id);
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) return null;
+    return { id: docSnap.id, ...docSnap.data() };
+  } catch (error) {
+    console.error(`[GuitarByQuang] Lỗi fetch gear id="${id}":`, error);
+    return null;
+  }
+}
+
+/**
+ * Thêm món đồ nghề mới
+ * @param {Object} gearData
+ * @returns {Promise<{success: boolean, id?: string, error?: string}>}
+ */
+export async function createGear(gearData) {
+  try {
+    if (!gearData || !gearData.title) {
+      return { success: false, error: 'Tên món đồ nghề không được để trống.' };
+    }
+
+    let baseSlug = generateSlugId(gearData.title);
+    let targetId = `gear-${baseSlug}`;
+    let counter = 2;
+
+    while (await checkSongIdExists(targetId)) {
+      targetId = `gear-${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    const dataToSave = { ...gearData };
+    delete dataToSave.id;
+
+    dataToSave.order = Number(dataToSave.order) || 1;
+    dataToSave.category = dataToSave.category || 'THIẾT BỊ';
+    dataToSave.image = dataToSave.image || 'assets/clover.jpg';
+    dataToSave.description = dataToSave.description || '';
+    dataToSave.buyUrl = dataToSave.buyUrl || '';
+    dataToSave.buyText = dataToSave.buyText || 'Mua ngay';
+    dataToSave.footerText = dataToSave.footerText || '';
+
+    await setDoc(doc(db, GEARS_COLLECTION, targetId), dataToSave);
+    return { success: true, id: targetId };
+  } catch (error) {
+    console.error('[GuitarByQuang] Lỗi khi tạo gear:', error);
+    return { success: false, error: 'Không thể thêm món đồ nghề. Vui lòng thử lại.' };
+  }
+}
+
+/**
+ * Cập nhật món đồ nghề
+ * @param {string} id
+ * @param {Object} gearData
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function updateGear(id, gearData) {
+  try {
+    if (!id) return { success: false, error: 'Không tìm thấy ID món đồ nghề.' };
+
+    const dataToSave = { ...gearData };
+    delete dataToSave.id;
+
+    if (dataToSave.order !== undefined) dataToSave.order = Number(dataToSave.order);
+
+    const docRef = doc(db, GEARS_COLLECTION, id);
+    await updateDoc(docRef, dataToSave);
+    return { success: true };
+  } catch (error) {
+    console.error(`[GuitarByQuang] Lỗi cập nhật gear id="${id}":`, error);
+    return { success: false, error: 'Không thể cập nhật món đồ nghề. Vui lòng thử lại.' };
+  }
+}
+
+/**
+ * Xóa món đồ nghề khỏi Firestore
+ * @param {string} id
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function deleteGear(id) {
+  try {
+    if (!id) return { success: false, error: 'Không tìm thấy ID món đồ nghề để xóa.' };
+    const docRef = doc(db, GEARS_COLLECTION, id);
+    await deleteDoc(docRef);
+    return { success: true };
+  } catch (error) {
+    console.error(`[GuitarByQuang] Lỗi xóa gear id="${id}":`, error);
+    return { success: false, error: 'Không thể xóa món đồ nghề. Vui lòng thử lại.' };
+  }
+}
+
+

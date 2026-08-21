@@ -5,7 +5,7 @@
  * Có initScrollSpy phiên bản trang chủ (không map kho-tab → nav active).
  */
 
-import { fetchAllSongs } from './firebase-service.js';
+import { fetchAllSongs, fetchAllGears } from './firebase-service.js';
 import {
   computeNormalizedFields,
   renderSongCard,
@@ -14,6 +14,48 @@ import {
   initMobileMenu,
   initModalListeners,
 } from './common.js';
+
+// ==========================================================================
+// GEARS (BỘ ĐỒ NGHỀ) RENDER LOGIC
+// ==========================================================================
+
+function renderGears(gears) {
+  const container = document.getElementById('gear-container');
+  if (!container || !gears || gears.length === 0) return;
+
+  container.innerHTML = gears.map(gear => {
+    const buyButtonHtml = gear.buyUrl
+      ? `<a href="${gear.buyUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-bold text-terracotta hover:text-terracotta-hover">
+          <span>${gear.buyText || 'Mua trên Shopee'}</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </a>`
+      : `<div class="text-xs font-bold text-terracotta italic">${gear.footerText ? `"${gear.footerText.replace(/"/g, '')}"` : ''}</div>`;
+
+    const cleanDesc = (gear.description || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const cleanTitle = (gear.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+    return `
+      <div class="reveal flex-shrink-0 w-[74vw] max-w-[280px] snap-center bg-white border-2 border-[#D8CEBF] rounded-3xl p-4 sm:p-5 shadow-soft hover:shadow-float hover:border-terracotta-border transition-all duration-300 active:scale-95 flex flex-col justify-between gap-3.5 group md:w-auto md:max-w-none">
+        <div class="space-y-3">
+          <div onclick="openImageModal('${gear.image || 'assets/clover.jpg'}', '${cleanTitle}', '${cleanDesc}')" class="w-full aspect-[4/3] rounded-2xl bg-[#EDE5D8] flex items-center justify-center p-3 border border-charcoal-border/40 shadow-inner overflow-hidden group/img relative cursor-zoom-in group-hover:scale-[1.02] transition-transform duration-300" title="Click để phóng to ảnh">
+            <img src="${gear.image || 'assets/clover.jpg'}" alt="${cleanTitle}" class="w-full h-full object-contain mix-blend-multiply" onerror="this.src='assets/clover.jpg'" />
+            <div class="absolute bottom-2 right-2 p-1.5 rounded-lg bg-charcoal/60 text-white/90 opacity-0 group-hover/img:opacity-100 transition-opacity backdrop-blur-sm shadow-sm pointer-events-none">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+            </div>
+          </div>
+          <div>
+            <span class="text-[10px] font-extrabold font-mono tracking-widest text-terracotta uppercase block">${gear.category || 'THIẾT BỊ'}</span>
+            <h4 class="text-base font-bold text-charcoal group-hover:text-terracotta transition-colors leading-snug">${gear.title}</h4>
+            <p class="text-xs text-charcoal-muted font-medium leading-relaxed mt-1 line-clamp-3">${gear.description || ''}</p>
+          </div>
+        </div>
+        <div class="pt-2 border-t border-[#EAE3D9]">
+          ${buyButtonHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
 
 // ==========================================================================
@@ -340,6 +382,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     computeNormalizedFields(songs);
     const featured = getFeaturedSongs(songs);
     renderFeaturedSongs(featured);
+  }
+
+  // Fetch & render bộ đồ nghề từ Firestore (hoặc fallback mặc định)
+  try {
+    const gears = await fetchAllGears();
+    if (gears && gears.length > 0) {
+      renderGears(gears);
+    }
+  } catch (err) {
+    console.warn('[GuitarByQuang] Không load được gears động, giữ nguyên fallback tĩnh:', err);
   }
 
   // Init modal listeners (checkout, demo, copy buttons, Escape)

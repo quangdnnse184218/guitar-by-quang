@@ -1,13 +1,22 @@
 /**
  * GUITAR BY QUANG - admin.js
  * Controller cho trang admin-dashboard.html
- * Tich hop: Segmented Toggle Free/Paid, auto-computed schema fields, Firebase Storage upload.
+ * Tich hop:
+ * - CRUD Video Tab (songs collection)
+ * - CRUD Bo Do Nghe (gears collection)
+ * - Tab Switcher giua Kho Tab va Bo Do Nghe
+ * - Upload Media (Video & Hinh Anh) qua Firebase Storage voi Progress Bar
  */
 
 import { onAuthChange, logoutAdmin } from './firebase-auth-service.js';
-import { fetchAllSongs, createSong, updateSong, deleteSong, uploadMediaFile } from './firebase-service.js';
+import {
+  fetchAllSongs, createSong, updateSong, deleteSong,
+  fetchAllGears, createGear, updateGear, deleteGear,
+  DEFAULT_GEARS, uploadMediaFile
+} from './firebase-service.js';
 
 let currentSongsList = [];
+let currentGearsList = [];
 
 // Auto-computed defaults theo loai bai
 const FREE_DEFAULTS = {
@@ -41,7 +50,7 @@ onAuthChange((user) => {
 });
 
 // ============================================================
-// TOAST
+// TOAST NOTIFICATION
 // ============================================================
 function showAdminToast(message, isSuccess = true) {
   const toast = document.getElementById('toast-notification');
@@ -64,7 +73,7 @@ function showAdminToast(message, isSuccess = true) {
 }
 
 // ============================================================
-// MODAL TOGGLE
+// MODAL TOGGLES
 // ============================================================
 function toggleSongModal(show) {
   const modal = document.getElementById('song-form-modal');
@@ -79,8 +88,21 @@ function toggleSongModal(show) {
   }
 }
 
+function toggleGearModal(show) {
+  const modal = document.getElementById('gear-form-modal');
+  if (!modal) return;
+  modal.classList.toggle('opacity-0', !show);
+  modal.classList.toggle('pointer-events-none', !show);
+  modal.classList.toggle('opacity-100', show);
+  const dialog = modal.querySelector('.modal-dialog');
+  if (dialog) {
+    dialog.classList.toggle('scale-95', !show);
+    dialog.classList.toggle('scale-100', show);
+  }
+}
+
 // ============================================================
-// SEGMENTED TOGGLE - Free vs Paid UI
+// SEGMENTED TOGGLE - Free vs Paid UI (cho Song)
 // ============================================================
 function setTabType(isFree) {
   const freeBtn    = document.getElementById('toggle-free-btn');
@@ -107,7 +129,7 @@ function setTabType(isFree) {
 }
 
 // ============================================================
-// 2. RENDER BANG BAI HAT
+// 2. RENDER BANG VIDEO TAB (SONGS)
 // ============================================================
 function renderSongsTable(songs) {
   const tbody    = document.getElementById('songs-table-body');
@@ -173,9 +195,73 @@ async function loadSongs() {
 }
 
 // ============================================================
-// FORM RESET HELPER
+// 3. RENDER BANG BO DO NGHE (GEARS)
 // ============================================================
-function resetFormForNew() {
+function renderGearsTable(gears) {
+  const tbody = document.getElementById('gears-table-body');
+  if (!tbody) return;
+
+  if (!gears || gears.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="py-8 text-center text-[#8C827A]">
+          Chua co mon do nghe nao. Hay bam "Them Mon Do Nghe" hoac bam "Nap 4 Mon Mau" de khoi tao nhe!
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = gears.map((gear, index) => {
+    const buyInfo = gear.buyUrl
+      ? `<a href="${gear.buyUrl}" target="_blank" class="inline-flex items-center gap-1 text-terracotta font-bold hover:underline truncate max-w-[220px]">
+          <span>${gear.buyText || 'Link Mua'}</span>
+          <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>`
+      : `<span class="text-xs text-[#70655B] italic">${gear.footerText || 'Tu van truc tiep'}</span>`;
+
+    const imgPreview = gear.image
+      ? `<img src="${gear.image}" alt="${gear.title}" class="w-10 h-10 object-contain rounded-xl bg-[#EDE5D8] border border-[#D6CFC4] p-0.5 shadow-xs" onerror="this.src='assets/clover.jpg'" />`
+      : `<div class="w-10 h-10 rounded-xl bg-[#EDE5D8] border border-[#D6CFC4] flex items-center justify-center text-base">🎸</div>`;
+
+    return `
+      <tr class="hover:bg-[#F7F4F0] transition-colors border-b border-[#E3DBD0] group">
+        <td class="py-4 px-4 text-center font-mono font-bold text-[#70655B]">${index + 1}</td>
+        <td class="py-3 px-4 text-center">${imgPreview}</td>
+        <td class="py-4 px-4">
+          <div class="font-black text-[#1A1614] text-sm group-hover:text-terracotta transition-colors">${gear.title}</div>
+          <div class="text-[11px] font-mono text-[#8C827A] font-semibold">ID: ${gear.id}</div>
+        </td>
+        <td class="py-4 px-4">
+          <span class="px-2.5 py-0.5 rounded-md bg-[#EAE4DC] text-[#3A332C] border border-[#D6CFC4] text-[10px] font-extrabold uppercase">${gear.category || 'THIET BI'}</span>
+        </td>
+        <td class="py-4 px-4">${buyInfo}</td>
+        <td class="py-4 px-4 text-center font-mono font-black text-terracotta">${gear.order || index + 1}</td>
+        <td class="py-4 px-4 text-right">
+          <div class="flex items-center justify-end gap-1.5">
+            <button onclick="handleEditGear('${gear.id}')" class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-extrabold text-xs transition-colors cursor-pointer shadow-xs">
+              Sua
+            </button>
+            <button onclick="handleDeleteGear('${gear.id}', '${gear.title.replace(/'/g, "\\'")}')" class="px-3 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 font-extrabold text-xs transition-colors cursor-pointer shadow-xs">
+              Xoa
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function loadGears() {
+  const gears = await fetchAllGears();
+  currentGearsList = gears;
+  renderGearsTable(gears);
+}
+
+// ============================================================
+// FORM RESET HELPERS
+// ============================================================
+function resetFormForNewSong() {
   const form = document.getElementById('song-form');
   if (form) form.reset();
 
@@ -198,8 +284,23 @@ function resetFormForNew() {
   setTabType(true);
 }
 
+function resetFormForNewGear() {
+  const form = document.getElementById('gear-form');
+  if (form) form.reset();
+
+  document.getElementById('form-gear-id').value         = '';
+  document.getElementById('form-gear-title').value      = '';
+  document.getElementById('form-gear-category').value   = 'GUITAR CHINH';
+  document.getElementById('form-gear-image').value      = 'assets/clover.jpg';
+  document.getElementById('form-gear-description').value= '';
+  document.getElementById('form-gear-buyUrl').value     = '';
+  document.getElementById('form-gear-buyText').value    = 'Mua tren Shopee';
+  document.getElementById('form-gear-footerText').value = '';
+  document.getElementById('form-gear-order').value      = currentGearsList.length + 1;
+}
+
 // ============================================================
-// 3. EDIT & DELETE HANDLERS
+// EDIT & DELETE HANDLERS (SONG)
 // ============================================================
 window.handleEditSong = function(songId) {
   const song = currentSongsList.find(s => s.id === songId);
@@ -243,7 +344,43 @@ window.handleDeleteSong = async function(songId, songTitle) {
 };
 
 // ============================================================
-// UPLOAD HELPER
+// EDIT & DELETE HANDLERS (GEAR)
+// ============================================================
+window.handleEditGear = function(gearId) {
+  const gear = currentGearsList.find(g => g.id === gearId);
+  if (!gear) return;
+
+  document.getElementById('modal-gear-form-title').textContent = 'Chinh Sua: ' + gear.title;
+  document.getElementById('save-gear-btn-text').textContent    = 'Luu Thay Doi';
+
+  document.getElementById('form-gear-id').value         = gear.id;
+  document.getElementById('form-gear-title').value      = gear.title || '';
+  document.getElementById('form-gear-category').value   = gear.category || 'THIET BI';
+  document.getElementById('form-gear-image').value      = gear.image || '';
+  document.getElementById('form-gear-description').value= gear.description || '';
+  document.getElementById('form-gear-buyUrl').value     = gear.buyUrl || '';
+  document.getElementById('form-gear-buyText').value    = gear.buyText || 'Mua tren Shopee';
+  document.getElementById('form-gear-footerText').value = gear.footerText || '';
+  document.getElementById('form-gear-order').value      = gear.order || 1;
+
+  toggleGearModal(true);
+};
+
+window.handleDeleteGear = async function(gearId, gearTitle) {
+  const ok = confirm('Ban co chac chan muon xoa mon do "' + gearTitle + '" (ID: ' + gearId + ') khoi Firestore khong?');
+  if (!ok) return;
+
+  const res = await deleteGear(gearId);
+  if (res.success) {
+    showAdminToast('Da xoa mon do "' + gearTitle + '" thanh cong!');
+    await loadGears();
+  } else {
+    showAdminToast(res.error || 'Loi khi xoa mon do nghe', false);
+  }
+};
+
+// ============================================================
+// UPLOAD HELPER WITH PROGRESS
 // ============================================================
 function setupUploadButton(btnId, fileInputId, urlInputId, progressId, progressTextId, progressBarId, folder) {
   const btn       = document.getElementById(btnId);
@@ -273,7 +410,7 @@ function setupUploadButton(btnId, fileInputId, urlInputId, progressId, progressT
     });
 
     btn.disabled = false;
-    btn.textContent = 'Upload';
+    btn.textContent = folder === 'images' ? 'Upload Anh' : 'Upload';
     fileInput.value = '';
 
     if (result.success) {
@@ -288,11 +425,36 @@ function setupUploadButton(btnId, fileInputId, urlInputId, progressId, progressT
 }
 
 // ============================================================
-// 4. DOM READY
+// 4. DOM READY EVENT LISTENERS
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   loadSongs();
+  loadGears();
 
+  // Tab Switcher (Video Tab vs Bo Do Nghe)
+  const tabNavSongs   = document.getElementById('tab-nav-songs');
+  const tabNavGears   = document.getElementById('tab-nav-gears');
+  const sectionSongs  = document.getElementById('section-songs');
+  const sectionGears  = document.getElementById('section-gears');
+
+  if (tabNavSongs && tabNavGears && sectionSongs && sectionGears) {
+    tabNavSongs.addEventListener('click', () => {
+      tabNavSongs.className = 'px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer bg-warm-gradient text-white shadow-xs';
+      tabNavGears.className = 'px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer text-[#5C5147] hover:text-[#1A1614] hover:bg-[#F4EFEA]';
+      sectionSongs.classList.remove('hidden');
+      sectionGears.classList.add('hidden');
+    });
+
+    tabNavGears.addEventListener('click', () => {
+      tabNavGears.className = 'px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer bg-warm-gradient text-white shadow-xs';
+      tabNavSongs.className = 'px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer text-[#5C5147] hover:text-[#1A1614] hover:bg-[#F4EFEA]';
+      sectionGears.classList.remove('hidden');
+      sectionSongs.classList.add('hidden');
+      loadGears();
+    });
+  }
+
+  // Dang xuat
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
@@ -301,6 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Lam moi danh sach songs
   const refreshBtn = document.getElementById('refresh-btn');
   if (refreshBtn) {
     refreshBtn.addEventListener('click', () => {
@@ -309,6 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Tim kiem nhanh songs
   const searchInput = document.getElementById('admin-search');
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
@@ -323,37 +487,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Mo Form Them Song
   const addSongBtn = document.getElementById('add-song-btn');
   if (addSongBtn) {
     addSongBtn.addEventListener('click', () => {
-      resetFormForNew();
+      resetFormForNewSong();
       document.getElementById('modal-form-title').textContent = 'Them Bai Hat Moi';
       document.getElementById('save-btn-text').textContent    = 'Them Bai Hat';
       toggleSongModal(true);
     });
   }
 
+  // Dong Modal Song
   const closeModalBtn = document.getElementById('close-modal-btn');
   const cancelFormBtn = document.getElementById('cancel-form-btn');
-  const modal         = document.getElementById('song-form-modal');
+  const songModal     = document.getElementById('song-form-modal');
   if (closeModalBtn) closeModalBtn.addEventListener('click', () => toggleSongModal(false));
   if (cancelFormBtn) cancelFormBtn.addEventListener('click', () => toggleSongModal(false));
-  if (modal) {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) toggleSongModal(false);
+  if (songModal) {
+    songModal.addEventListener('click', (e) => {
+      if (e.target === songModal) toggleSongModal(false);
     });
   }
 
+  // Segmented Toggle Song (Free/Paid)
   const toggleFreeBtn = document.getElementById('toggle-free-btn');
   const togglePaidBtn = document.getElementById('toggle-paid-btn');
   if (toggleFreeBtn) toggleFreeBtn.addEventListener('click', () => setTabType(true));
   if (togglePaidBtn) togglePaidBtn.addEventListener('click', () => setTabType(false));
 
+  // Upload Video Demo & Video Tab cho Song
   setupUploadButton('upload-demo-btn', 'upload-demo-file', 'form-videoDemo',
     'upload-demo-progress', 'upload-demo-progress-text', 'upload-demo-bar', 'videos');
   setupUploadButton('upload-tab-btn', 'upload-tab-file', 'form-targetUrl',
     'upload-tab-progress', 'upload-tab-progress-text', 'upload-tab-bar', 'videos');
 
+  // Submit Form Song
   const songForm = document.getElementById('song-form');
   if (songForm) {
     songForm.addEventListener('submit', async (e) => {
@@ -440,6 +609,114 @@ document.addEventListener('DOMContentLoaded', () => {
         await loadSongs();
       } else {
         showAdminToast(res.error || 'Co loi xay ra, vui long thu lai.', false);
+      }
+    });
+  }
+
+  // ============================================================
+  // GEAR FORM LISTENERS
+  // ============================================================
+  const addGearBtn = document.getElementById('add-gear-btn');
+  if (addGearBtn) {
+    addGearBtn.addEventListener('click', () => {
+      resetFormForNewGear();
+      document.getElementById('modal-gear-form-title').textContent = 'Them Mon Do Nghe';
+      document.getElementById('save-gear-btn-text').textContent    = 'Luu Mon Do Nghe';
+      toggleGearModal(true);
+    });
+  }
+
+  // Seed 4 mon mac dinh
+  const seedGearsBtn = document.getElementById('seed-gears-btn');
+  if (seedGearsBtn) {
+    seedGearsBtn.addEventListener('click', async () => {
+      const ok = confirm('Ban co muon nap 4 mon do nghe mau vao Firestore khong?');
+      if (!ok) return;
+
+      seedGearsBtn.disabled = true;
+      seedGearsBtn.textContent = 'Dang nap...';
+
+      for (const item of DEFAULT_GEARS) {
+        await createGear(item);
+      }
+
+      seedGearsBtn.disabled = false;
+      seedGearsBtn.textContent = '🔄 Nap 4 Mon Mau';
+      showAdminToast('Da nap thanh cong 4 mon do nghe mau!');
+      await loadGears();
+    });
+  }
+
+  // Dong Modal Gear
+  const closeGearModalBtn = document.getElementById('close-gear-modal-btn');
+  const cancelGearBtn     = document.getElementById('cancel-gear-btn');
+  const gearModal         = document.getElementById('gear-form-modal');
+  if (closeGearModalBtn) closeGearModalBtn.addEventListener('click', () => toggleGearModal(false));
+  if (cancelGearBtn) cancelGearBtn.addEventListener('click', () => toggleGearModal(false));
+  if (gearModal) {
+    gearModal.addEventListener('click', (e) => {
+      if (e.target === gearModal) toggleGearModal(false);
+    });
+  }
+
+  // Upload Anh cho Gear
+  setupUploadButton('upload-gear-img-btn', 'upload-gear-img-file', 'form-gear-image',
+    'upload-gear-img-progress', 'upload-gear-img-progress-text', 'upload-gear-img-bar', 'images');
+
+  // Submit Form Gear
+  const gearForm = document.getElementById('gear-form');
+  if (gearForm) {
+    gearForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const gearId = document.getElementById('form-gear-id').value;
+      const isEdit = Boolean(gearId);
+      const title  = document.getElementById('form-gear-title').value.trim();
+
+      if (!title) {
+        alert('Vui long nhap ten mon do nghe nhe!');
+        return;
+      }
+
+      const gearData = {
+        title,
+        category:    document.getElementById('form-gear-category').value.trim() || 'THIET BI',
+        image:       document.getElementById('form-gear-image').value.trim() || 'assets/clover.jpg',
+        description: document.getElementById('form-gear-description').value.trim(),
+        buyUrl:      document.getElementById('form-gear-buyUrl').value.trim(),
+        buyText:     document.getElementById('form-gear-buyText').value.trim() || 'Mua ngay',
+        footerText:  document.getElementById('form-gear-footerText').value.trim(),
+        order:       Number(document.getElementById('form-gear-order').value) || 1,
+      };
+
+      const saveBtn     = document.getElementById('save-gear-btn');
+      const saveBtnText = document.getElementById('save-gear-btn-text');
+      const saveSpinner = document.getElementById('save-gear-spinner');
+
+      if (saveBtn)     saveBtn.disabled = true;
+      if (saveBtnText) saveBtnText.classList.add('hidden');
+      if (saveSpinner) saveSpinner.classList.remove('hidden');
+
+      let res;
+      if (isEdit) {
+        res = await updateGear(gearId, gearData);
+      } else {
+        res = await createGear(gearData);
+      }
+
+      if (saveBtn)     saveBtn.disabled = false;
+      if (saveBtnText) saveBtnText.classList.remove('hidden');
+      if (saveSpinner) saveSpinner.classList.add('hidden');
+
+      if (res.success) {
+        toggleGearModal(false);
+        showAdminToast(isEdit
+          ? 'Da cap nhat mon do "' + title + '" thanh cong!'
+          : 'Da them mon do "' + title + '" thanh cong!'
+        );
+        await loadGears();
+      } else {
+        showAdminToast(res.error || 'Co loi xay ra khi luu do nghe.', false);
       }
     });
   }
