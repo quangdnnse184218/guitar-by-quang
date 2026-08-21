@@ -55,6 +55,9 @@
         <a href="index.html#about" class="nav-tab-link hover:text-charcoal py-1">Giới thiệu</a>
         <a href="kho-tab.html" class="nav-tab-link active hover:text-charcoal py-1">Kho Video Tab</a>
         <a href="cong-cu.html" class="nav-tab-link hover:text-charcoal py-1">Công Cụ</a>
+        <a href="cua-toi.html" class="nav-tab-link hover:text-charcoal py-1 flex items-center gap-1">
+          <span>❤️ Của Tôi</span>
+        </a>
         <a href="index.html#faq" class="nav-tab-link hover:text-charcoal py-1">Hỏi đáp</a>
         <a href="index.html#contact" class="nav-tab-link hover:text-charcoal py-1">Liên hệ</a>
       </nav>
@@ -67,13 +70,17 @@
         </span>
       </div>
 
-      <!-- Quick Actions: TikTok + Hamburger -->
-      <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-        <a href="https://www.tiktok.com/@quangdnn104?is_from_webapp=1&sender_device=pc" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-surfaceCard text-charcoal hover:bg-terracotta hover:text-white border border-charcoal-border/80 transition-all shadow-sm">
-          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/>
-          </svg>
-          <span>TikTok @quangdnn104</span>
+      <!-- Quick Actions: Đăng ký + Đăng nhập + Hamburger -->
+      <div class="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
+        <!-- Nút Đăng ký (Secondary UI Button) -->
+        <button onclick="showToast('Tính năng Đăng ký tài khoản thành viên sẽ sớm ra mắt nhé! 🎸')" class="hidden sm:inline-flex items-center bg-white/80 border border-terracotta/40 text-charcoal font-semibold hover:bg-white hover:border-terracotta hover:text-terracotta px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-200 shadow-xs cursor-pointer">
+          Đăng ký
+        </button>
+
+        <!-- Nút Đăng nhập (Primary CTA) -->
+        <a href="admin-login.html" class="bg-warm-gradient text-white font-bold shadow-soft hover:opacity-95 hover:scale-[1.02] active:scale-95 transition-all duration-200 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm flex items-center gap-1.5 whitespace-nowrap">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          <span>Đăng nhập</span>
         </a>
 
         <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-charcoal hover:bg-surface/80 transition-colors cursor-pointer" aria-label="Mở menu" aria-expanded="false" aria-controls="mobile-menu">
@@ -93,9 +100,22 @@
         <a href="index.html" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">← Về Trang Chủ</a>
         <a href="index.html#about" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">Giới thiệu</a>
         <a href="kho-tab.html" class="mobile-nav-link py-2 border-b border-charcoal-border/40 text-terracotta font-extrabold">Kho Video Tab ✓</a>
-        <a href="cong-cu.html" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">Công Cụ Tập Đàn</a>
+        <a href="cong-cu.html" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">Công Cụ Hỗ Trợ</a>
+        <a href="cua-toi.html" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta flex items-center gap-1.5 text-terracotta font-bold">
+          <span>❤️ Góc Của Tôi</span>
+        </a>
         <a href="index.html#faq" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">Hỏi đáp</a>
-        <a href="index.html#contact" class="mobile-nav-link py-2 hover:text-terracotta">Liên hệ (TikTok, Zalo, Facebook)</a>
+        <a href="index.html#contact" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">Liên hệ (TikTok, Zalo, Facebook)</a>
+        
+        <div class="pt-2 flex items-center gap-2">
+          <button onclick="showToast('Tính năng Đăng ký tài khoản thành viên sẽ sớm ra mắt nhé! 🎸')" class="flex-1 py-2.5 rounded-full bg-surfaceCard text-charcoal border border-charcoal-border/80 font-bold text-xs text-center cursor-pointer">
+            Đăng ký
+          </button>
+          <a href="admin-login.html" class="flex-1 py-2.5 rounded-full bg-warm-gradient text-white font-bold text-xs text-center flex items-center justify-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            <span>Đăng nhập</span>
+          </a>
+        </div>
       </div>
     </div>
   </header>
@@ -260,9 +280,11 @@
       <div class="flex justify-center flex-wrap gap-x-6 gap-y-1 text-xs text-charcoal-muted font-semibold pt-1">
         <a href="index.html#about" class="hover:text-terracotta transition-colors">Giới thiệu</a>
         <span>•</span>
-        <a href="kho-tab.html" class="text-terracotta font-bold">Kho Video Tab</a>
+        <a href="kho-tab.html" class="hover:text-terracotta transition-colors">Kho Video Tab</a>
         <span>•</span>
         <a href="cong-cu.html" class="hover:text-terracotta transition-colors">Công Cụ</a>
+        <span>•</span>
+        <a href="cua-toi.html" class="text-terracotta font-bold">Của Tôi</a>
         <span>•</span>
         <a href="index.html#faq" class="hover:text-terracotta transition-colors">Hỏi đáp</a>
         <span>•</span>
@@ -273,84 +295,151 @@
 
 
   <!-- ========================================== -->
-  <!-- MODAL: MUA VIDEO TAB & THANH TOÁN QR       -->
+  <!-- MODAL: CHI TIẾT TAB TRẢ PHÍ & THANH TOÁN QR -->
   <!-- ========================================== -->
-  <div id="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="modal-tab-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
-    <div class="modal-dialog relative w-full max-w-lg bg-canvas rounded-3xl p-6 sm:p-8 shadow-float border border-charcoal-border max-h-[90vh] overflow-y-auto scale-95" tabindex="-1">
-
-      <button id="close-checkout-modal" class="absolute top-5 right-5 p-2 rounded-full text-charcoal-muted hover:text-charcoal hover:bg-surface transition-colors cursor-pointer" aria-label="Đóng cửa sổ">
+  <div id="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="modal-tab-title" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-charcoal/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="modal-dialog relative w-full max-w-4xl bg-canvas rounded-3xl p-5 sm:p-7 shadow-float border border-charcoal-border max-h-[92vh] overflow-y-auto scale-95" tabindex="-1">
+      
+      <button id="close-checkout-modal" class="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-full text-charcoal-muted hover:text-charcoal hover:bg-surface transition-colors z-10 cursor-pointer" aria-label="Đóng cửa sổ">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
         </svg>
       </button>
 
-      <div class="space-y-1 mb-6">
-        <span class="text-xs font-mono font-bold uppercase tracking-wider text-terracotta">Mua Bản Video Tab</span>
-        <h3 id="modal-tab-title" class="text-2xl font-extrabold text-charcoal">Tên bài hát</h3>
-        <p id="modal-tab-meta" class="text-xs text-charcoal-muted font-medium">Tuning: Standard • Bản Video Tab quay chi tiết từng thế tay và nhịp gõ</p>
-      </div>
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6 items-start">
 
-      <div class="p-5 sm:p-6 rounded-2xl bg-surface border border-charcoal-border/80 space-y-5">
-
-        <div class="flex items-center justify-between border-b border-charcoal-border/60 pb-3">
-          <div>
-            <span class="text-xs font-bold text-charcoal-muted block">Số tiền chuyển khoản:</span>
-            <span class="text-[11px] text-terracotta font-bold" id="modal-discount-tag">(HSSV ưu đãi còn 179k)</span>
-          </div>
-          <span id="modal-tab-price" class="text-xl font-extrabold text-terracotta">239.000 VNĐ</span>
-        </div>
-
-        <div class="flex flex-col items-center justify-center">
-          <div class="w-56 h-56 sm:w-64 sm:h-64 bg-white p-3 rounded-2xl border border-charcoal-border/80 flex items-center justify-center shadow-md flex-shrink-0">
-            <img src="assets/qr.jpg" alt="Mã QR Chuyển Khoản TpBank" class="w-full h-full object-contain" />
-          </div>
-          <span class="text-[11px] font-bold text-charcoal-muted mt-2">Quét mã QR bằng App Ngân hàng bất kỳ</span>
-        </div>
-
-        <div class="space-y-2.5 text-xs text-charcoal bg-surfaceCard p-4 rounded-xl border border-charcoal-border/60">
-          <div>
-            <span class="text-charcoal-muted block text-[11px] font-bold">Ngân hàng:</span>
-            <strong class="font-bold text-charcoal text-sm">TpBank (Ngân hàng Tiên Phong)</strong>
-          </div>
-          <div>
-            <span class="text-charcoal-muted block text-[11px] font-bold">Số tài khoản:</span>
-            <div class="flex items-center gap-2">
-              <span class="font-mono text-sm font-extrabold text-charcoal tracking-wide">03970202801</span>
-              <button id="copy-stk-btn" class="px-2.5 py-0.5 rounded bg-surfaceAlt hover:bg-terracotta-light text-[10px] font-bold text-terracotta border border-charcoal-border transition-colors cursor-pointer">
-                Sao chép
-              </button>
+        <!-- CỘT TRÁI (md:col-span-6): Video Demo & Mã QR Chuyển Khoản -->
+        <div class="md:col-span-6 space-y-4">
+          
+          <!-- Video Demo Container -->
+          <div id="checkout-modal-video-container" class="space-y-1.5">
+            <div class="flex items-center justify-between text-xs font-bold text-charcoal-muted">
+              <span>🎬 Video Demo Thực Tế:</span>
+            </div>
+            <div class="relative overflow-hidden rounded-2xl aspect-video bg-charcoal shadow-md border border-charcoal-border/80">
+              <video id="checkout-modal-video" controls playsinline class="w-full h-full aspect-video rounded-2xl object-cover">
+                <source id="checkout-modal-video-source" src="" type="video/mp4">
+                Trình duyệt của bạn không hỗ trợ phát video trực tiếp.
+              </video>
             </div>
           </div>
-          <div>
-            <span class="text-charcoal-muted block text-[11px] font-bold">Tên chủ tài khoản:</span>
-            <span class="font-bold text-charcoal">DOAN NGUYEN NHAT QUANG</span>
-          </div>
-          <div>
-            <span class="text-charcoal-muted block text-[11px] font-bold">Nội dung chuyển khoản:</span>
-            <div class="flex items-center gap-2">
-              <span id="modal-transfer-syntax" class="font-mono font-bold text-terracotta bg-terracotta-light px-2 py-0.5 rounded">VIDEOTAB RESG1CTK</span>
-              <button id="copy-syntax-btn" class="px-2.5 py-0.5 rounded bg-surfaceAlt hover:bg-terracotta-light text-[10px] font-bold text-terracotta border border-charcoal-border transition-colors cursor-pointer">
-                Sao chép
-              </button>
+
+          <!-- Khối Quét Mã QR & Thông tin tài khoản -->
+          <div class="p-4 sm:p-5 rounded-2xl bg-surface border border-charcoal-border/80 space-y-3.5 shadow-xs">
+            <div class="flex items-center justify-between border-b border-charcoal-border/60 pb-2.5">
+              <span class="text-xs font-mono font-bold uppercase tracking-wider text-terracotta">Chuyển Khoản Nhận Tab</span>
+              <span class="text-[11px] text-charcoal-muted font-bold">TpBank QR 24/7</span>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+              <div class="relative group/qr w-36 h-36 sm:w-40 sm:h-40 bg-white p-2 rounded-2xl border border-charcoal-border/80 flex items-center justify-center shadow-sm flex-shrink-0 cursor-zoom-in overflow-hidden" onclick="openImageModal('assets/qr.jpg', 'Mã QR Chuyển Khoản TpBank (03970202801)', 'Quét mã QR bằng App Ngân hàng bất kỳ để nhận bản Video Tab và hỗ trợ 1-1 qua Zalo.')">
+                <img id="modal-qr-img" src="assets/qr.jpg" alt="Mã QR Chuyển Khoản TpBank" class="w-full h-full object-contain group-hover/qr:scale-105 transition-transform duration-200" />
+                <span class="absolute bottom-1.5 inset-x-2 py-0.5 rounded-lg bg-charcoal/80 text-white text-[9px] font-bold text-center opacity-0 group-hover/qr:opacity-100 transition-opacity backdrop-blur-xs">🔍 Phóng to QR</span>
+              </div>
+
+              <div class="flex-1 w-full space-y-2 text-xs text-charcoal bg-surfaceCard p-3 rounded-xl border border-charcoal-border/60">
+                <div>
+                  <span class="text-charcoal-muted block text-[10px] font-bold">Số tài khoản:</span>
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="font-mono text-xs sm:text-sm font-extrabold text-charcoal tracking-wide">03970202801</span>
+                    <button id="copy-stk-btn" class="px-2 py-0.5 rounded bg-surfaceAlt hover:bg-terracotta-light text-[10px] font-bold text-terracotta border border-charcoal-border transition-colors cursor-pointer">Copy</button>
+                  </div>
+                </div>
+                <div>
+                  <span class="text-charcoal-muted block text-[10px] font-bold">Chủ tài khoản:</span>
+                  <span class="font-bold text-charcoal text-xs">DOAN NGUYEN NHAT QUANG</span>
+                </div>
+                <div>
+                  <span class="text-charcoal-muted block text-[10px] font-bold">Nội dung chuyển khoản:</span>
+                  <div class="flex items-center justify-between gap-1">
+                    <span id="modal-transfer-syntax" class="font-mono font-bold text-terracotta bg-terracotta-light px-1.5 py-0.5 rounded text-[11px] truncate">VIDEOTAB TAB</span>
+                    <button id="copy-syntax-btn" class="px-2 py-0.5 rounded bg-surfaceAlt hover:bg-terracotta-light text-[10px] font-bold text-terracotta border border-charcoal-border transition-colors cursor-pointer">Copy</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+
         </div>
 
-      </div>
+        <!-- CỘT PHẢI (md:col-span-6): Thông số chi tiết & Quyền lợi -->
+        <div class="md:col-span-6 space-y-4 flex flex-col justify-between h-full">
+          
+          <div class="space-y-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300 text-[11px] font-black uppercase tracking-wider">
+                💎 Bản Trả Phí Chi Tiết
+              </span>
+              <span id="modal-tab-duration" class="text-xs font-semibold text-charcoal-muted">03:30</span>
+            </div>
 
-      <div class="mt-6 space-y-4">
-        <div class="p-4 rounded-2xl bg-surfaceCard border-l-4 border-terracotta shadow-soft">
-          <p class="text-xs sm:text-sm font-bold text-charcoal leading-relaxed">
-            Chuyển khoản xong anh em nhớ chụp lại màn hình bill rồi gửi qua Zalo 0326.768.885 để mình gửi link video nhé! 🎸
-          </p>
+            <div>
+              <h3 id="modal-tab-title" class="text-xl sm:text-2xl font-extrabold text-charcoal leading-snug">
+                Tên bài hát
+              </h3>
+              <p id="modal-tab-meta" class="text-xs text-charcoal-muted font-medium mt-0.5">
+                Bản Video Tab chạy nốt chuẩn xác đồng bộ theo âm thanh đàn mộc thật
+              </p>
+            </div>
+
+            <!-- Giá bán & Ưu đãi -->
+            <div class="p-3.5 rounded-2xl bg-surface border border-charcoal-border/80 flex items-center justify-between">
+              <div>
+                <span class="text-xs font-bold text-charcoal-muted block">Giá bản Video Tab:</span>
+                <span class="text-[11px] text-terracotta font-bold" id="modal-discount-tag">(HSSV ưu đãi còn 179k)</span>
+              </div>
+              <span id="modal-tab-price" class="text-2xl font-extrabold text-terracotta">239.000 VNĐ</span>
+            </div>
+
+            <!-- Bảng thông số chi tiết khi tập -->
+            <div class="space-y-2 text-xs text-charcoal bg-surfaceCard p-3.5 rounded-2xl border border-charcoal-border/70">
+              <div class="flex items-center justify-between border-b border-charcoal-border/50 pb-1.5">
+                <span class="text-charcoal-muted font-semibold">Độ khó bài tập:</span>
+                <span id="modal-tab-level" class="font-extrabold text-terracotta">4/10</span>
+              </div>
+              <div class="flex items-center justify-between border-b border-charcoal-border/50 pb-1.5">
+                <span class="text-charcoal-muted font-semibold">Tông / Tuning:</span>
+                <span id="modal-tab-tuning" class="font-bold text-charcoal">Standard</span>
+              </div>
+              <div class="flex items-center justify-between border-b border-charcoal-border/50 pb-1.5">
+                <span class="text-charcoal-muted font-semibold">Vị trí kẹp Capo:</span>
+                <span id="modal-tab-capo" class="font-bold text-emerald-700">Không kẹp</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-charcoal-muted font-semibold">Tempo bản gốc:</span>
+                <span id="modal-tab-tempo" class="font-bold text-amber-800">~95 BPM</span>
+              </div>
+            </div>
+
+            <!-- Nút mở nhanh Metronome -->
+            <a href="metronome.html" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-3.5 py-2 rounded-xl transition-all w-full justify-center shadow-xs">
+              <span>🥁 Mở Metronome luyện bài này →</span>
+            </a>
+
+            <!-- Quyền lợi đi kèm -->
+            <div class="p-3 rounded-2xl bg-surface border border-charcoal-border/70 space-y-2 text-xs">
+              <span class="font-bold text-charcoal block text-[11px] uppercase tracking-wider">Trọn bộ tài liệu bạn sẽ nhận:</span>
+              <ul class="space-y-1.5 text-charcoal-muted font-medium text-xs">
+                <li class="flex items-start gap-1.5 text-charcoal"><span class="text-emerald-600 font-bold flex-shrink-0">✓</span> <span><strong>Video Tab</strong> chạy nốt chuẩn xác đồng bộ âm thanh & nhịp gõ</span></li>
+                <li class="flex items-start gap-1.5 text-charcoal"><span class="text-emerald-600 font-bold flex-shrink-0">✓</span> <span><strong>File PDF</strong> in ấn sắc nét, đầy đủ nốt và số ngăn bấm</span></li>
+                <li class="flex items-start gap-1.5 text-charcoal"><span class="text-emerald-600 font-bold flex-shrink-0">✓</span> <span><strong>Hỗ trợ giải thích kỹ thuật trong tab 1-1 qua Zalo</strong> khi có đoạn khó tập</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Nút Zalo gửi bill nhận link -->
+          <div class="space-y-2 pt-2">
+            <a href="https://zalo.me/0326768885" target="_blank" rel="noopener noreferrer" class="w-full py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold transition-all shadow-md active:scale-98 flex items-center justify-center gap-2">
+              <span class="w-4 h-4 rounded-full bg-white text-blue-600 font-black flex items-center justify-center text-[9px]">Z</span>
+              <span>Gửi bill qua Zalo nhận file ngay: 0326.768.885 →</span>
+            </a>
+            <p class="text-center text-[11px] text-charcoal-muted font-medium">
+              Chuyển khoản xong chụp lại bill nhắn Zalo để mình gửi link Google Drive tốc độ cao nhé! 🎸
+            </p>
+          </div>
+
         </div>
-        <a href="https://zalo.me/0326768885" target="_blank" rel="noopener noreferrer" class="w-full py-3.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition-all shadow-soft active:scale-[0.99] flex items-center justify-center gap-2">
-          <span class="w-5 h-5 rounded-full bg-white text-blue-600 font-black flex items-center justify-center text-[10px]">Z</span>
-          <span>Gửi bill qua Zalo: 0326.768.885</span>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-          </svg>
-        </a>
+
       </div>
 
     </div>
@@ -423,7 +512,7 @@
 
           <!-- Gợi ý nhỏ bên dưới video -->
           <div class="p-3 rounded-xl bg-white/5 border border-white/10 text-[11px] text-canvas/70 leading-relaxed font-medium">
-            💡 <span class="text-ochre font-bold">Mẹo:</span> Nên giảm tốc độ video xuống 0.75x trên YouTube để nhìn rõ thế bấm tay trái và lực móc tay phải nhé!
+            💡 <span class="text-ochre font-bold">Mẹo:</span> Nên giảm tốc độ video xuống 0.75x trên YouTube để nhìn rõ từng nốt chạy và khớp nhịp gõ thùng nhé!
           </div>
         </div>
 

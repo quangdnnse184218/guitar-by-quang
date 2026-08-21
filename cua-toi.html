@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Góc Của Tôi - Guitar By Quang</title>
+  <meta name="description" content="Danh sách bài hát yêu thích và bài tập đã hoàn thành của bạn trên Guitar By Quang." />
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎸</text></svg>">
+
+  <!-- Google Font: Nunito -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind Custom Theme (script thường) -->
+  <script src="assets/theme-config.js"></script>
+  <!-- Custom CSS dùng chung -->
+  <link rel="stylesheet" href="assets/theme.css">
+</head>
+<body class="bg-grain min-h-screen flex flex-col selection:bg-terracotta-light selection:text-terracotta">
+
+  <!-- NAVIGATION BAR -->
+  <header id="navbar" class="sticky top-0 z-40 transition-all duration-300 bg-[#E4D3BF]/95 backdrop-blur-md border-b border-[#D4BFAB] shadow-sm">
+    <div class="navbar-inner max-w-7xl mx-auto px-4 sm:px-8 md:px-12 h-20 flex items-center justify-between flex-nowrap gap-2">
+
+      <a href="index.html" class="group flex items-center gap-2.5 sm:gap-3.5 flex-shrink-0">
+        <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-terracotta/80 shadow-sm flex-shrink-0 bg-stone-300 group-hover:scale-105 transition-transform duration-200">
+          <img src="assets/avatar.jpg" alt="Guitar By Quang" class="w-full h-full object-cover object-center" />
+        </div>
+        <div class="flex flex-col">
+          <span class="text-lg sm:text-2xl font-extrabold tracking-tight text-charcoal group-hover:text-terracotta transition-colors duration-200 leading-tight">Guitar By Quang</span>
+          <span class="text-[11px] font-semibold text-charcoal-muted hidden sm:inline-block tracking-wide">fingerstyle diary • Nhật Quang</span>
+        </div>
+      </a>
+
+      <nav id="desktop-nav" class="hidden md:flex items-center space-x-6 lg:space-x-8 text-sm font-bold text-charcoal-muted flex-nowrap whitespace-nowrap">
+        <a href="index.html#about" class="nav-tab-link hover:text-charcoal py-1">Giới thiệu</a>
+        <a href="kho-tab.html" class="nav-tab-link hover:text-charcoal py-1">Kho Video Tab</a>
+        <a href="cong-cu.html" class="nav-tab-link hover:text-charcoal py-1">Công Cụ</a>
+        <a href="cua-toi.html" class="nav-tab-link active hover:text-charcoal py-1 flex items-center gap-1.5 text-terracotta">
+          <span>❤️ Của Tôi</span>
+        </a>
+        <a href="index.html#faq" class="nav-tab-link hover:text-charcoal py-1">Hỏi đáp</a>
+        <a href="index.html#contact" class="nav-tab-link hover:text-charcoal py-1">Liên hệ</a>
+      </nav>
+
+      <div class="md:hidden flex items-center justify-center flex-1 mx-1 overflow-hidden">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surfaceCard/95 border border-[#D4BFAB] text-xs font-extrabold text-terracotta shadow-xs max-w-full">
+          <span class="w-1.5 h-1.5 rounded-full bg-terracotta flex-shrink-0"></span>
+          <span class="truncate">Góc Của Tôi</span>
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
+        <!-- Nút Đăng ký (Secondary UI Button) -->
+        <button onclick="showToast('Tính năng Đăng ký tài khoản thành viên sẽ sớm ra mắt nhé! 🎸')" class="hidden sm:inline-flex items-center bg-white/80 border border-terracotta/40 text-charcoal font-semibold hover:bg-white hover:border-terracotta hover:text-terracotta px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-200 shadow-xs cursor-pointer">
+          Đăng ký
+        </button>
+
+        <!-- Nút Đăng nhập (Primary CTA) -->
+        <a href="admin-login.html" class="bg-warm-gradient text-white font-bold shadow-soft hover:opacity-95 hover:scale-[1.02] active:scale-95 transition-all duration-200 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm flex items-center gap-1.5 whitespace-nowrap">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          <span>Đăng nhập</span>
+        </a>
+
+        <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-charcoal hover:bg-surface/80 transition-colors cursor-pointer" aria-label="Mở menu" aria-expanded="false" aria-controls="mobile-menu">
+          <svg id="menu-icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" /></svg>
+          <svg id="menu-icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden md:hidden bg-[#E4D3BF] border-b border-[#D4BFAB] px-6 py-5">
+      <div class="flex flex-col space-y-3 text-base font-bold text-charcoal">
+        <a href="index.html#about" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">Giới thiệu</a>
+        <a href="kho-tab.html" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">Kho Video Tab Guitar</a>
+        <a href="cong-cu.html" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">Công Cụ Hỗ Trợ</a>
+        <a href="cua-toi.html" class="mobile-nav-link py-2 border-b border-charcoal-border/40 text-terracotta font-extrabold flex items-center gap-2">
+          <span>❤️ Góc Của Tôi</span>
+        </a>
+        <a href="index.html#faq" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">Hỏi đáp</a>
+        <a href="index.html#contact" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">Liên hệ</a>
+        
+        <div class="pt-2 flex items-center gap-2">
+          <button onclick="showToast('Tính năng Đăng ký tài khoản thành viên sẽ sớm ra mắt nhé! 🎸')" class="flex-1 py-2.5 rounded-full bg-surfaceCard text-charcoal border border-charcoal-border/80 font-bold text-xs text-center cursor-pointer">
+            Đăng ký
+          </button>
+          <a href="admin-login.html" class="flex-1 py-2.5 rounded-full bg-warm-gradient text-white font-bold text-xs text-center flex items-center justify-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            <span>Đăng nhập</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+  <main class="flex-grow">
+    <!-- HERO SECTION CỦA TÔI -->
+    <section class="relative pt-8 pb-12 md:pt-12 md:pb-16 bg-hero-glow border-b border-[#D4BFAB]/60 overflow-hidden">
+      <div class="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 md:px-12 space-y-6">
+
+        <!-- Breadcrumb -->
+        <nav class="flex items-center space-x-2 text-xs font-bold text-charcoal-muted" aria-label="Breadcrumb">
+          <a href="index.html" class="hover:text-terracotta transition-colors">Trang chủ</a>
+          <span>/</span>
+          <span class="text-terracotta">Của Tôi</span>
+        </nav>
+
+        <div class="max-w-3xl space-y-3">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-surfaceCard border border-charcoal-border/80 text-xs font-bold text-terracotta">
+            <span>✨ Không Cần Đăng Nhập • Lưu Trên Trình Duyệt</span>
+          </div>
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl text-charcoal font-extrabold tracking-tight leading-tight">
+            Góc Lưu Trữ <span class="text-terracotta">Của Bạn.</span>
+          </h1>
+          <p class="text-charcoal-muted text-sm sm:text-base font-medium leading-relaxed">
+            Xem lại những bài hát bạn đã bấm <strong class="text-charcoal font-bold">Yêu thích (❤️)</strong> hoặc đánh dấu <strong class="text-charcoal font-bold">Đã học xong (✓)</strong>. Dữ liệu được lưu an toàn trên thiết bị này.
+          </p>
+        </div>
+
+        <!-- 2-TAB FILTER PILL -->
+        <div class="pt-4 flex items-center">
+          <div class="relative flex p-1.5 rounded-full bg-surface border border-charcoal-border/80 shadow-soft max-w-md w-full">
+            <button id="tab-btn-favorites" class="my-tab-btn relative z-10 flex-1 py-2.5 px-4 rounded-full text-xs sm:text-sm font-bold text-center transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer text-white" data-tab="favorites">
+              <span>❤️ Yêu Thích</span>
+              <span id="badge-fav-count" class="px-2 py-0.5 rounded-full bg-white/20 text-[11px] font-extrabold">0</span>
+            </button>
+            <button id="tab-btn-completed" class="my-tab-btn relative z-10 flex-1 py-2.5 px-4 rounded-full text-xs sm:text-sm font-bold text-center transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer text-charcoal-muted hover:text-charcoal" data-tab="completed">
+              <span>✓ Đã Học Xong</span>
+              <span id="badge-comp-count" class="px-2 py-0.5 rounded-full bg-charcoal/10 text-[11px] font-extrabold">0</span>
+            </button>
+            <!-- Sliding Background Pill Indicator -->
+            <div id="tab-slider" class="absolute top-1.5 bottom-1.5 left-1.5 w-[calc(50%-6px)] bg-warm-gradient rounded-full shadow-glow transition-all duration-300 ease-out pointer-events-none"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- CONTENT SECTION: GRID & EMPTY STATE -->
+    <section class="py-12 md:py-16">
+      <div class="max-w-7xl mx-auto px-6 sm:px-8 md:px-12">
+
+        <!-- Grid Cards -->
+        <div id="my-tabs-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
+          <div class="skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
+          <div class="skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
+        </div>
+
+        <!-- EMPTY STATE CONTAINER -->
+        <div id="empty-state" class="hidden text-center py-16 px-6 max-w-lg mx-auto space-y-5 bg-surfaceCard/80 border border-charcoal-border/80 rounded-3xl shadow-soft">
+          <div id="empty-state-icon" class="w-16 h-16 mx-auto rounded-3xl bg-surfaceAlt flex items-center justify-center text-3xl shadow-inner">
+            🎸
+          </div>
+          <div class="space-y-2">
+            <h3 id="empty-state-title" class="text-xl font-extrabold text-charcoal">Chưa có bài hát nào ở đây</h3>
+            <p id="empty-state-desc" class="text-xs sm:text-sm text-charcoal-muted font-medium leading-relaxed">
+              Bạn chưa thêm bài hát nào vào danh sách này. Hãy ghé qua Kho Video Tab và bấm biểu tượng ❤️ hoặc ✓ trên từng thẻ bài hát nhé!
+            </p>
+          </div>
+          <div class="pt-2">
+            <a href="kho-tab.html" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-warm-gradient hover:brightness-105 text-white font-bold text-xs sm:text-sm transition-all shadow-glow active:scale-95">
+              <span>Khám phá Kho Video Tab →</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+  <!-- FOOTER -->
+  <footer class="py-10 bg-canvas border-t border-charcoal-border/60 text-center">
+    <div class="max-w-7xl mx-auto px-6 space-y-3">
+      <p class="text-sm sm:text-base font-bold text-charcoal max-w-2xl mx-auto leading-relaxed">Chúc anh em tập đàn vui vẻ và sớm đánh trọn vẹn bài hát mình thích! 🎸</p>
+      <p class="text-xs text-charcoal-muted font-medium">© 2026 Guitar By Quang (Nhật Quang).</p>
+      <div class="flex justify-center space-x-6 text-xs text-charcoal-muted font-semibold pt-1">
+        <a href="index.html#about" class="hover:text-terracotta transition-colors">Giới thiệu</a>
+        <span>•</span>
+        <a href="kho-tab.html" class="hover:text-terracotta transition-colors">Kho Video Tab</a>
+        <span>•</span>
+        <a href="cong-cu.html" class="hover:text-terracotta transition-colors">Công Cụ</a>
+        <span>•</span>
+        <a href="cua-toi.html" class="text-terracotta font-bold">Của Tôi</a>
+        <span>•</span>
+        <a href="https://www.tiktok.com/@quangdnn104" target="_blank" rel="noopener noreferrer" class="hover:text-terracotta transition-colors">TikTok</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL: MUA VIDEO TAB -->
+  <div id="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="modal-tab-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="modal-dialog relative w-full max-w-lg bg-canvas rounded-3xl p-6 sm:p-8 shadow-float border border-charcoal-border max-h-[90vh] overflow-y-auto scale-95 transition-transform duration-300" tabindex="-1">
+      <button id="close-checkout-modal" class="absolute top-5 right-5 p-2 rounded-full text-charcoal-muted hover:text-charcoal hover:bg-surface transition-colors cursor-pointer" aria-label="Đóng cửa sổ">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+      <div class="space-y-1 mb-6">
+        <span class="text-xs font-mono font-bold uppercase tracking-wider text-terracotta">Mua Bản Video Tab</span>
+        <h3 id="modal-tab-title" class="text-2xl font-extrabold text-charcoal">Tên bài hát</h3>
+        <p id="modal-tab-meta" class="text-xs text-charcoal-muted font-medium">Tuning: Standard • Bản Video Tab chạy nốt đồng bộ với âm thanh đàn mộc thật và nhịp gõ</p>
+      </div>
+      <div class="p-5 sm:p-6 rounded-2xl bg-surface border border-charcoal-border/80 space-y-5">
+        <div class="flex items-center justify-between border-b border-charcoal-border/60 pb-3">
+          <div><span class="text-xs font-bold text-charcoal-muted block">Số tiền chuyển khoản:</span><span class="text-[11px] text-terracotta font-bold" id="modal-discount-tag">(HSSV ưu đãi còn 179k)</span></div>
+          <span id="modal-tab-price" class="text-xl font-extrabold text-terracotta">239.000 VNĐ</span>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+          <div class="w-56 h-56 sm:w-64 sm:h-64 bg-white p-3 rounded-2xl border border-charcoal-border/80 flex items-center justify-center shadow-md flex-shrink-0">
+            <img id="modal-qr-img" src="assets/qr.jpg" alt="Mã QR Chuyển Khoản TpBank" class="w-full h-full object-contain" />
+          </div>
+          <span class="text-[11px] font-bold text-charcoal-muted mt-2">Quét mã QR bằng App Ngân hàng bất kỳ</span>
+        </div>
+        <div class="space-y-2.5 text-xs text-charcoal bg-surfaceCard p-4 rounded-xl border border-charcoal-border/60">
+          <div><span class="text-charcoal-muted block text-[11px] font-bold">Ngân hàng:</span><strong class="font-bold text-charcoal text-sm">TpBank (Ngân hàng Tiên Phong)</strong></div>
+          <div><span class="text-charcoal-muted block text-[11px] font-bold">Số tài khoản:</span><div class="flex items-center gap-2"><span class="font-mono text-sm font-extrabold text-charcoal tracking-wide">03970202801</span><button id="copy-stk-btn" class="px-2.5 py-0.5 rounded bg-surfaceAlt hover:bg-terracotta-light text-[10px] font-bold text-terracotta border border-charcoal-border transition-colors cursor-pointer">Sao chép</button></div></div>
+          <div><span class="text-charcoal-muted block text-[11px] font-bold">Tên chủ tài khoản:</span><span class="font-bold text-charcoal">DOAN NGUYEN NHAT QUANG</span></div>
+          <div><span class="text-charcoal-muted block text-[11px] font-bold">Nội dung chuyển khoản:</span><div class="flex items-center gap-2"><span id="modal-transfer-content" class="font-mono text-xs font-bold text-terracotta bg-terracotta-light/60 px-2 py-0.5 rounded border border-terracotta/30">MUA TAB [TEN BAI] [SO DIEN THOAI]</span><button id="copy-content-btn" class="px-2.5 py-0.5 rounded bg-surfaceAlt hover:bg-terracotta-light text-[10px] font-bold text-terracotta border border-charcoal-border transition-colors cursor-pointer">Sao chép</button></div></div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-charcoal space-y-1">
+          <div class="font-bold text-amber-900 flex items-center gap-1.5"><span>📱</span><span>Nhận Video Tab sau khi chuyển khoản:</span></div>
+          <p class="text-charcoal-muted text-[11px] leading-relaxed">Chuyển khoản xong bạn chụp lại màn hình rồi gửi qua Zalo <strong>0326.768.885</strong>. Mình sẽ gửi link video chất lượng cao kèm hướng dẫn chi tiết ngay cho bạn nhé!</p>
+        </div>
+      </div>
+      <div class="mt-6 flex flex-col sm:flex-row gap-3">
+        <a href="https://zalo.me/0326768885" target="_blank" rel="noopener noreferrer" class="flex-1 py-3 px-4 rounded-full bg-warm-gradient hover:brightness-105 text-white font-bold text-xs text-center transition-all shadow-glow flex items-center justify-center gap-2">
+          <span>Gửi ảnh qua Zalo (0326.768.885)</span>
+        </a>
+        <button id="close-checkout-modal-btn" class="py-3 px-6 rounded-full bg-surface hover:bg-surfaceAlt text-charcoal-muted hover:text-charcoal text-xs font-bold transition-colors border border-charcoal-border/80 cursor-pointer">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: VIDEO DEMO -->
+  <div id="video-demo-modal" role="dialog" aria-modal="true" aria-labelledby="modal-video-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="modal-dialog relative w-full max-w-2xl bg-canvas rounded-3xl p-5 sm:p-7 shadow-float border border-charcoal-border max-h-[90vh] overflow-y-auto scale-95 transition-transform duration-300" tabindex="-1">
+      <button id="close-video-modal" class="absolute top-4 right-4 p-2 rounded-full text-charcoal-muted hover:text-charcoal hover:bg-surface transition-colors z-10 cursor-pointer" aria-label="Đóng video demo">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+      <div class="space-y-1 mb-4 pr-10">
+        <span class="text-xs font-mono font-bold uppercase tracking-wider text-terracotta">Video Demo</span>
+        <h3 id="modal-video-title" class="text-xl font-extrabold text-charcoal">Xem Thử Đoạn Tab Mẫu</h3>
+      </div>
+      <div class="relative overflow-hidden rounded-2xl aspect-video bg-charcoal shadow-inner">
+        <video id="demo-video-player" controls playsinline preload="none" class="w-full h-full object-cover">
+          <source id="demo-video-source" src="" type="video/mp4">
+          Trình duyệt của bạn không hỗ trợ phát video.
+        </video>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: FREE TAB DETAIL -->
+  <div id="free-tab-modal" role="dialog" aria-modal="true" aria-labelledby="free-tab-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/65 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="modal-dialog relative w-full max-w-4xl bg-canvas rounded-3xl p-5 sm:p-8 shadow-float border border-charcoal-border max-h-[92vh] overflow-y-auto scale-95 transition-transform duration-300" tabindex="-1">
+      <button id="close-free-tab-modal" class="absolute top-4 right-4 p-2.5 rounded-full text-charcoal-muted hover:text-charcoal hover:bg-surface transition-colors z-20 cursor-pointer" aria-label="Đóng chi tiết">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div class="lg:col-span-7 space-y-3">
+          <div class="relative overflow-hidden rounded-2xl aspect-video bg-charcoal shadow-lg border border-charcoal-border/40">
+            <video id="free-tab-video-player" controls playsinline preload="metadata" class="w-full h-full object-cover">
+              <source id="free-tab-video-source" src="" type="video/mp4">
+              Trình duyệt không hỗ trợ phát video.
+            </video>
+          </div>
+          <div class="flex items-center justify-between text-xs text-charcoal-muted font-bold px-1">
+            <span class="flex items-center gap-1 text-emerald-700"><span>🌿</span><span>Bản Video Tab Miễn Phí</span></span>
+            <span id="free-tab-modal-duration">03:20</span>
+          </div>
+        </div>
+        <div class="lg:col-span-5 space-y-4 flex flex-col justify-between h-full">
+          <div class="space-y-3">
+            <div class="space-y-1">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 uppercase tracking-wide inline-block">FREE TAB</span>
+              <h3 id="free-tab-modal-title" class="text-xl sm:text-2xl font-extrabold text-charcoal leading-snug">Tên bài hát</h3>
+            </div>
+            <p id="free-tab-modal-desc" class="text-xs sm:text-sm text-charcoal-muted font-medium leading-relaxed bg-surface/60 p-3.5 rounded-xl border border-charcoal-border/70">Mô tả bài hát...</p>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="p-2.5 rounded-xl bg-surfaceCard border border-charcoal-border/60"><span class="text-[10px] font-bold text-charcoal-muted block">Độ khó</span><strong id="free-tab-modal-level" class="text-emerald-700 font-extrabold text-sm">4/10</strong></div>
+              <div class="p-2.5 rounded-xl bg-surfaceCard border border-charcoal-border/60"><span class="text-[10px] font-bold text-charcoal-muted block">Tuning</span><strong id="free-tab-modal-tuning" class="text-charcoal font-bold text-sm">Standard</strong></div>
+              <div class="p-2.5 rounded-xl bg-surfaceCard border border-charcoal-border/60"><span class="text-[10px] font-bold text-charcoal-muted block">Kẹp Capo</span><strong id="free-tab-modal-capo" class="text-charcoal font-bold text-sm">Không kẹp</strong></div>
+              <div class="p-2.5 rounded-xl bg-surfaceCard border border-charcoal-border/60"><span class="text-[10px] font-bold text-charcoal-muted block">Tempo</span><strong id="free-tab-modal-tempo" class="text-terracotta font-bold text-sm">~95 BPM</strong></div>
+            </div>
+            <a href="metronome.html" class="flex items-center justify-between p-2.5 rounded-xl bg-surface hover:bg-surfaceAlt border border-charcoal-border/70 text-xs font-bold text-charcoal group transition-colors">
+              <span class="flex items-center gap-1.5"><span class="text-terracotta">⏱️</span><span>Mở Máy Gõ Nhịp (Metronome)</span></span>
+              <span class="text-terracotta group-hover:translate-x-1 transition-transform">→</span>
+            </a>
+          </div>
+          <div class="space-y-2 pt-2 border-t border-charcoal-border/50">
+            <a id="free-tab-direct-download" href="#" target="_blank" rel="noopener noreferrer" class="w-full py-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-md flex items-center justify-center gap-2 active:scale-95 text-center">
+              <span>Tải file Video Tab về máy</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" role="status" aria-live="polite" class="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-charcoal text-canvas text-xs font-bold shadow-float border border-charcoal-border/50 opacity-0 translate-y-4 pointer-events-none transition-all duration-300">
+    <span class="w-2 h-2 rounded-full bg-terracotta flex-shrink-0 animate-pulse"></span>
+    <span id="toast-msg">Thông báo</span>
+  </div>
+
+  <!-- Module Scripts -->
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="firebase-service.js"></script>
+  <script type="module" src="local-storage-service.js"></script>
+  <script type="module" src="common.js"></script>
+  <script type="module" src="cua-toi.js"></script>
+</body>
+</html>

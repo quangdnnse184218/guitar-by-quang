@@ -10,6 +10,7 @@
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js';
 
 // ============================================================
@@ -28,8 +29,11 @@ const firebaseConfig = {
 // Khởi tạo Firebase App
 const app = initializeApp(firebaseConfig);
 
-// Khởi tạo Firestore — đây là instance chính dùng cho toàn bộ app
+// Khởi tạo Firestore — instance chính dùng cho dữ liệu
 export const db = getFirestore(app);
+
+// Khởi tạo Firebase Authentication — instance chính dùng cho Admin Auth
+export const auth = getAuth(app);
 
 // Analytics (optional — chỉ chạy trên browser thật, không chạy khi localhost)
 try {

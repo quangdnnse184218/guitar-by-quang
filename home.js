@@ -145,6 +145,178 @@ function initScrollSpy() {
   });
 }
 
+// ==========================================================================
+// SMOOTH FADE-UP REVEAL ANIMATION (ÁP DỤNG CẢ PC & MOBILE)
+// ==========================================================================
+
+function initSmoothFadeUp() {
+  // Fallback an toàn nếu GSAP hoặc ScrollTrigger chưa tải
+  if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+    return;
+  }
+
+  // Tôn trọng cài đặt giảm chuyển động của hệ điều hành (Accessibility)
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // 1. Hero Section Reveal (Text & Video Card)
+  const heroLeft = document.querySelector('#hero .lg\\:col-span-7');
+  if (heroLeft) {
+    gsap.from(heroLeft.children, {
+      opacity: 0,
+      y: 30,
+      duration: 0.6,
+      stagger: 0.08,
+      ease: 'power2.out',
+      clearProps: 'transform,opacity'
+    });
+  }
+
+  const heroVideoWrapper = document.querySelector('#hero .lg\\:col-span-5');
+  if (heroVideoWrapper) {
+    gsap.from(heroVideoWrapper, {
+      opacity: 0,
+      y: 30,
+      duration: 0.7,
+      delay: 0.1,
+      ease: 'power2.out',
+      clearProps: 'transform,opacity'
+    });
+  }
+
+  // 2. Floating Music Motifs Parallax (Cuộn nhẹ nhàng)
+  const motifs = document.querySelectorAll('.music-motif');
+  motifs.forEach((motif, i) => {
+    const depthSpeed = (i % 3 + 1) * 25;
+    gsap.to(motif, {
+      y: -depthSpeed,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: motif.closest('section') || motif,
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: 1
+      }
+    });
+  });
+
+  // 3. Section Giới Thiệu (#about) — Fade-up start top 85%
+  const aboutGrid = document.querySelector('#about .grid');
+  if (aboutGrid) {
+    gsap.from(aboutGrid.children, {
+      opacity: 0,
+      y: 30,
+      duration: 0.6,
+      stagger: 0.12,
+      ease: 'power2.out',
+      clearProps: 'transform,opacity',
+      scrollTrigger: {
+        trigger: aboutGrid,
+        start: 'top 85%',
+        once: true
+      }
+    });
+  }
+
+  // 4 Card đồ nghề (#about) — Fade-up stagger
+  const gearCards = document.querySelectorAll('#about .flex.overflow-x-auto > div');
+  if (gearCards.length > 0) {
+    gsap.from(gearCards, {
+      opacity: 0,
+      y: 30,
+      stagger: 0.1,
+      duration: 0.6,
+      ease: 'power2.out',
+      clearProps: 'transform,opacity',
+      scrollTrigger: {
+        trigger: '#about .flex.overflow-x-auto',
+        start: 'top 85%',
+        once: true
+      }
+    });
+  }
+
+  // 4. Section FAQ (#faq) — Fade-up stagger
+  const faqItems = document.querySelectorAll('#faq details.faq-item');
+  if (faqItems.length > 0) {
+    gsap.from(faqItems, {
+      opacity: 0,
+      y: 30,
+      stagger: 0.08,
+      duration: 0.6,
+      ease: 'power2.out',
+      clearProps: 'transform,opacity',
+      scrollTrigger: {
+        trigger: '#faq',
+        start: 'top 85%',
+        once: true
+      }
+    });
+  }
+
+  // 5. Section Dịch Vụ & Liên Hệ (#contact) — Fade-up
+  const serviceCards = document.querySelectorAll('#contact .max-w-5xl .flex > div');
+  if (serviceCards.length > 0) {
+    gsap.from(serviceCards, {
+      opacity: 0,
+      y: 30,
+      stagger: 0.1,
+      duration: 0.6,
+      ease: 'power2.out',
+      clearProps: 'transform,opacity',
+      scrollTrigger: {
+        trigger: '#contact .max-w-5xl',
+        start: 'top 85%',
+        once: true
+      }
+    });
+  }
+
+  const contactButtons = document.querySelectorAll('#contact .pt-4 > a');
+  if (contactButtons.length > 0) {
+    gsap.from(contactButtons, {
+      opacity: 0,
+      y: 20,
+      stagger: 0.08,
+      duration: 0.6,
+      ease: 'power2.out',
+      clearProps: 'transform,opacity',
+      scrollTrigger: {
+        trigger: '#contact .pt-4',
+        start: 'top 85%',
+        once: true
+      }
+    });
+  }
+}
+
+function animateFeaturedCards() {
+  if (typeof gsap === 'undefined') return;
+  const cards = document.querySelectorAll('#featured-grid > div');
+  if (cards.length === 0) return;
+
+  gsap.from(cards, {
+    opacity: 0,
+    y: 30,
+    duration: 0.6,
+    stagger: 0.1,
+    ease: 'power2.out',
+    clearProps: 'transform,opacity',
+    scrollTrigger: {
+      trigger: '#featured-grid',
+      start: 'top 85%',
+      once: true
+    }
+  });
+
+  if (typeof ScrollTrigger !== 'undefined') {
+    ScrollTrigger.refresh();
+  }
+}
+
 
 // ==========================================================================
 // DOMCONTENTLOADED
@@ -156,6 +328,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   initScrollReveal();
   initNavbarShrink();
   initMobileMenu();
+
+  // Khởi động Smooth Fade-Up Reveal (cả PC & Mobile)
+  initSmoothFadeUp();
 
   // Fetch & render 3 bài nổi bật
   showFeaturedSkeleton();
@@ -169,6 +344,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     computeNormalizedFields(songs);
     const featured = getFeaturedSongs(songs);
     renderFeaturedSongs(featured);
+
+    // Kích hoạt hiệu ứng Smooth Fade-Up cho 3 thẻ bài hát sau khi render xong
+    animateFeaturedCards();
   }
 
   // Init modal listeners (checkout, demo, copy buttons, Escape)

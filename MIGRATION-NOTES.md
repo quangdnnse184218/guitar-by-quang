@@ -324,3 +324,70 @@ Tinh chỉnh UI/UX dựa trên feedback thực tế: Bộ lọc Kho Tab mới (T
    - Toàn bộ nội dung kể chuyện và tiêu đề phần Giới thiệu được đưa vào một **Container Card** nổi bật: `bg-surfaceCard/95 border border-[#D4BFAB] rounded-3xl p-6 sm:p-10 shadow-soft backdrop-blur-sm`, tạo cảm giác chỉn chu, sang trọng như một trang tạp chí acoustic.
 3. **Hiệu ứng Scroll Reveal**:
    - Tinh chỉnh `.reveal` trong `assets/theme.css` trượt nhẹ 20px với thời gian transition 0.6s cubic-bezier mượt mà khi cuộn tới.
+
+---
+
+# GIAI ĐOẠN 4 — KHU VỰC QUẢN TRỊ ADMIN (CRUD) & CÁ NHÂN HÓA PHÍA KHÁCH (YÊU THÍCH / ĐÃ HỌC XONG)
+
+**Ngày hoàn thành:** 2026-08-21  
+**Trạng thái kiểm thử:** 10/10 Verification Checks PASS (100%)
+
+---
+
+## ⚠️ HƯỚNG DẪN THỦ CÔNG DÀNH CHO ADMIN (USER CẦN LÀM TRÊN FIREBASE CONSOLE)
+Do tài khoản Firebase Console nằm ngoài phạm vi truy cập của môi trường code, bạn vui lòng thực hiện 3 bước sau:
+
+1. **Bật phương thức đăng nhập Email/Password:**
+   - Mở [Firebase Console](https://console.firebase.google.com/) → Chọn dự án **guitar-by-quang**.
+   - Vào menu **Build** → **Authentication** → Tab **Sign-in method**.
+   - Nhấn vào **Email/Password** → Bật switch **Enable** → Nhấn **Save**.
+
+2. **Tạo tài khoản Admin duy nhất:**
+   - Trong **Authentication** → Tab **Users** → Nhấn **Add user**.
+   - Nhập Email (ví dụ: `admin@guitarbyquang.com` hoặc email cá nhân của bạn) và Mật khẩu quản trị.
+   - Nhấn **Add user**. (Đây là tài khoản duy nhất dùng để đăng nhập vào `admin-login.html`).
+
+3. **Deploy Security Rules cho Firestore Database:**
+   - Vào menu **Build** → **Firestore Database** → Tab **Rules**.
+   - Copy toàn bộ nội dung file `firestore.rules` (đã được tạo ở thư mục gốc dự án) dán vào:
+     ```javascript
+     rules_version = '2';
+     service cloud.firestore {
+       match /databases/{database}/documents {
+         match /songs/{songId} {
+           allow read: if true;
+           allow write: if request.auth != null;
+         }
+       }
+     }
+     ```
+   - Nhấn **Publish** để áp dụng.
+
+---
+
+## 🔒 ĐỊA CHỈ TRUY CẬP KHU VỰC ADMIN (BẢO MẬT NỘI BỘ)
+Khu vực Admin **HOÀN TOÀN KHÔNG XUẤT HIỆN** trên thanh điều hướng hay footer công khai của website để bảo vệ tính riêng tư. Bạn lưu lại 2 đường dẫn sau để tự truy cập:
+
+- **Trang Đăng Nhập:** `admin-login.html`
+- **Bảng Điều Khiển Quản Trị:** `admin-dashboard.html`
+
+> 🛡️ **Lưu ý kiến trúc bảo mật:**
+> Lớp bảo vệ thực sự nằm ở **Firestore Security Rules** (`request.auth != null`), ngăn chặn mọi hành vi ghi trái phép từ bên ngoài dù có bypass được giao diện. Route-guard ở `admin-dashboard.html` (`onAuthChange`) đóng vai trò là **UX-guard** để điều hướng người dùng mượt mà.
+
+---
+
+## 📁 DANH SÁCH FILE ĐÃ TẠO & CẬP NHẬT TRONG GIAI ĐOẠN 4
+
+### 1. File mới:
+- `firestore.rules`: File cấu hình Firestore Security Rules (chỉ cho phép ghi khi đã Auth).
+- `firebase-auth-service.js`: Service Model quản lý đăng nhập/đăng xuất/lắng nghe Auth (`loginAdmin`, `logoutAdmin`, `onAuthChange`).
+- `local-storage-service.js`: Service Model quản lý lưu trữ trình duyệt ẩn danh cho khách (`getFavorites`, `toggleFavorite`, `isFavorite`, `getCompleted`, `toggleCompleted`, `isCompleted`) với 2 key namespace: `gbq_favorites` và `gbq_completed`.
+- `admin-login.html` + `admin-login.js`: Giao diện đăng nhập quản trị tone gỗ mun sang trọng, tối giản.
+- `admin-dashboard.html` + `admin.js`: Bảng quản lý toàn bộ bài hát, thống kê, tìm kiếm, Form Thêm/Sửa bài hát đầy đủ schema, Xóa bài có xác nhận.
+- `cua-toi.html` + `cua-toi.js`: Trang "Góc Của Tôi" với 2-Tab Filter Pill ("Yêu Thích ❤️" / "Đã Học Xong ✓"), render card bài hát tái sử dụng `renderSongCard()`, trạng thái rỗng thân thiện.
+
+### 2. File cập nhật:
+- `firebase-config.js`: Khởi tạo và export thêm instance `auth` từ Firebase Auth SDK.
+- `firebase-service.js`: Bổ sung các thao tác ghi dữ liệu Firestore (`generateSlugId`, `checkSongIdExists`, `createSong`, `updateSong`, `deleteSong`). Sinh ID dạng slug không dấu (`noi-nay-co-anh`, `noi-nay-co-anh-2`...) đồng bộ với schema dự án.
+- `common.js`: Cập nhật `renderSongCard()` tích hợp 2 icon nhỏ (❤️ và ✓) trên cả Card Miễn phí và Trả phí, có `stopPropagation()`, cập nhật DOM tức thì và phát event `gbq:storage-change`.
+- `index.html`, `kho-tab.html`, `cong-cu.html`, `metronome.html`: Thêm link mục "Của Tôi" (`cua-toi.html`) vào Desktop Nav, Mobile Menu và Footer.

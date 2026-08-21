@@ -50,8 +50,10 @@ export function debounce(fn, delay = 150) {
 }
 
 
+import { isFavorite, isCompleted, toggleFavorite, toggleCompleted } from './local-storage-service.js';
+
 // ==========================================================================
-// 2. CARD TEMPLATE (dùng chung cho home.js và kho-tab.js)
+// 2. CARD TEMPLATE (dùng chung cho home.js, kho-tab.js và cua-toi.js)
 // ==========================================================================
 
 /**
@@ -65,6 +67,32 @@ export function debounce(fn, delay = 150) {
 export function renderSongCard(tab, index, wrapperExtraClasses = '') {
   const percent = Math.min(100, Math.max(10, (tab.levelNum / 10) * 100));
   const staggerDelay = `${Math.min(index, 8) * 60}ms`;
+
+  const favActive = isFavorite(tab.id);
+  const compActive = isCompleted(tab.id);
+
+  const favBtnHtml = `
+    <button onclick="handleToggleFavorite(event, '${tab.id}')" data-fav-btn="${tab.id}" class="w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-sm ${favActive ? 'bg-rose-500 text-white scale-105' : 'bg-black/40 text-white/80 hover:text-white hover:bg-black/60'}" title="${favActive ? 'Bỏ yêu thích' : 'Yêu thích'}" aria-label="Yêu thích">
+      <svg class="w-3.5 h-3.5 ${favActive ? 'fill-current' : 'fill-none'}" stroke="currentColor" stroke-width="${favActive ? '0' : '2'}" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+      </svg>
+    </button>
+  `;
+
+  const compBtnHtml = `
+    <button onclick="handleToggleCompleted(event, '${tab.id}')" data-comp-btn="${tab.id}" class="w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-sm ${compActive ? 'bg-emerald-500 text-white scale-105' : 'bg-black/40 text-white/80 hover:text-white hover:bg-black/60'}" title="${compActive ? 'Đánh dấu chưa học' : 'Đã học xong'}" aria-label="Đã học xong">
+      <svg class="w-3.5 h-3.5 fill-none" stroke="currentColor" stroke-width="${compActive ? '3' : '2.5'}" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+      </svg>
+    </button>
+  `;
+
+  const userActionGroup = `
+    <div class="flex items-center gap-1.5 z-10" onclick="event.stopPropagation()">
+      ${favBtnHtml}
+      ${compBtnHtml}
+    </div>
+  `;
 
   // ========================================================================
   // 1. BIẾN THỂ: CARD MIỄN PHÍ (Đồng bộ cấu trúc & chiều cao cân đối với Card Trả phí)
@@ -80,7 +108,10 @@ export function renderSongCard(tab, index, wrapperExtraClasses = '') {
 
             <div class="flex justify-between items-start text-[10px] uppercase font-bold tracking-wider">
               <span class="bg-black/40 backdrop-blur px-2.5 py-1 rounded-full text-white/95">${tab.category || 'Fingerstyle'}</span>
-              <span class="px-3 py-1 rounded-full text-xs font-black bg-emerald-400 text-emerald-950 border border-emerald-300 shadow-sm uppercase tracking-wide">FREE</span>
+              <div class="flex items-center gap-2">
+                ${userActionGroup}
+                <span class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-400 text-emerald-950 border border-emerald-300 shadow-sm uppercase tracking-wide">FREE</span>
+              </div>
             </div>
 
             <div class="my-auto text-center flex flex-col items-center justify-center">
@@ -171,16 +202,13 @@ export function renderSongCard(tab, index, wrapperExtraClasses = '') {
   if (tab.buttonType === 'buy') {
     ctaButtonHtml = `
       <button onclick="openCheckoutModal('${tab.id}')" class="w-full py-2.5 rounded-full bg-warm-gradient hover:brightness-105 text-white font-bold text-xs transition-all shadow-glow active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer">
-        <span>Mua Video Tab (${tab.priceFormatted})</span>
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-        </svg>
+        <span>Xem chi tiết →</span>
       </button>
     `;
   } else {
     ctaButtonHtml = `
       <a href="${tab.targetUrl}" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 rounded-full bg-surfaceCard hover:bg-charcoal hover:text-white text-charcoal font-bold border border-charcoal-border/90 text-xs transition-all shadow-sm flex items-center justify-center gap-1.5 active:scale-95 text-center group/btn">
-        <span>${tab.buttonText}</span>
+        <span>${tab.buttonText || 'Xem chi tiết →'}</span>
         <svg class="w-3.5 h-3.5 text-terracotta group-hover/btn:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
         </svg>
@@ -197,7 +225,10 @@ export function renderSongCard(tab, index, wrapperExtraClasses = '') {
 
           <div class="flex justify-between items-start text-[10px] uppercase font-bold tracking-wider">
             <span class="bg-charcoal/50 backdrop-blur px-2.5 py-1 rounded-full text-white/95">${tab.category}</span>
-            ${badgeHtml}
+            <div class="flex items-start gap-2">
+              ${userActionGroup}
+              ${badgeHtml}
+            </div>
           </div>
 
           ${artworkCenterHtml}
@@ -238,6 +269,51 @@ export function renderSongCard(tab, index, wrapperExtraClasses = '') {
     </div>
   `;
 }
+
+// ==========================================================================
+// 2.1. TOGGLE FAVORITE & COMPLETED HANDLERS (Client-side)
+// ==========================================================================
+
+export function handleToggleFavorite(event, songId) {
+  if (event) event.stopPropagation();
+  const nextState = toggleFavorite(songId);
+  const btns = document.querySelectorAll(`[data-fav-btn="${songId}"]`);
+  btns.forEach(btn => {
+    if (nextState) {
+      btn.className = 'w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-sm bg-rose-500 text-white scale-105';
+      btn.title = 'Bỏ yêu thích';
+      btn.innerHTML = `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+    } else {
+      btn.className = 'w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-sm bg-black/40 text-white/80 hover:text-white hover:bg-black/60';
+      btn.title = 'Yêu thích';
+      btn.innerHTML = `<svg class="w-3.5 h-3.5 fill-none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+    }
+  });
+  showToast(nextState ? 'Đã lưu vào danh sách Yêu thích ❤️' : 'Đã bỏ khỏi danh sách Yêu thích');
+  window.dispatchEvent(new CustomEvent('gbq:storage-change', { detail: { type: 'favorite', songId, state: nextState } }));
+}
+
+export function handleToggleCompleted(event, songId) {
+  if (event) event.stopPropagation();
+  const nextState = toggleCompleted(songId);
+  const btns = document.querySelectorAll(`[data-comp-btn="${songId}"]`);
+  btns.forEach(btn => {
+    if (nextState) {
+      btn.className = 'w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-sm bg-emerald-500 text-white scale-105';
+      btn.title = 'Đánh dấu chưa học';
+      btn.innerHTML = `<svg class="w-3.5 h-3.5 fill-none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`;
+    } else {
+      btn.className = 'w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-sm bg-black/40 text-white/80 hover:text-white hover:bg-black/60';
+      btn.title = 'Đã học xong';
+      btn.innerHTML = `<svg class="w-3.5 h-3.5 fill-none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`;
+    }
+  });
+  showToast(nextState ? 'Đã đánh dấu Đã học xong ✓' : 'Đã bỏ đánh dấu Đã học xong');
+  window.dispatchEvent(new CustomEvent('gbq:storage-change', { detail: { type: 'completed', songId, state: nextState } }));
+}
+
+window.handleToggleFavorite = handleToggleFavorite;
+window.handleToggleCompleted = handleToggleCompleted;
 
 
 // ==========================================================================
@@ -320,9 +396,14 @@ window.openVideoDemoModal = function openVideoDemoModal(title, videoSrc) {
   });
 };
 
-// --- Checkout Modal ---
+// --- Checkout Modal (Chi tiết Tab Trả Phí) ---
 
 function closeCheckoutModal() {
+  const videoEl = document.getElementById('checkout-modal-video');
+  if (videoEl) {
+    videoEl.pause();
+    videoEl.currentTime = 0;
+  }
   toggleModal('checkout-modal', false);
 }
 
@@ -340,9 +421,38 @@ window.openCheckoutModal = function openCheckoutModal(tabId) {
   const syntaxEl = document.getElementById('modal-transfer-syntax');
   const discountTag = document.getElementById('modal-discount-tag');
 
+  // Các field thông số kỹ thuật mở rộng
+  const levelEl = document.getElementById('modal-tab-level');
+  const tuningEl = document.getElementById('modal-tab-tuning');
+  const capoEl = document.getElementById('modal-tab-capo');
+  const tempoEl = document.getElementById('modal-tab-tempo');
+  const durationEl = document.getElementById('modal-tab-duration');
+  const descEl = document.getElementById('modal-tab-description');
+  const videoEl = document.getElementById('checkout-modal-video');
+  const videoSrcEl = document.getElementById('checkout-modal-video-source');
+  const videoContainer = document.getElementById('checkout-modal-video-container');
+
   if (titleEl) titleEl.textContent = tab.title;
-  if (metaEl) metaEl.textContent = 'Tuning: Standard • Bản Video Tab quay chi tiết từng thế tay và nhịp gõ';
+  if (metaEl) metaEl.textContent = `Tuning: ${tab.tuning || 'Standard'} • Bản Video Tab chạy nốt đồng bộ với âm thanh đàn mộc thật và nhịp gõ`;
   if (priceEl) priceEl.textContent = tab.priceFormatted;
+
+  if (levelEl) levelEl.textContent = tab.level || '4/10';
+  if (tuningEl) tuningEl.textContent = tab.tuning || 'Standard';
+  if (capoEl) capoEl.textContent = tab.capo || 'Không kẹp';
+  if (tempoEl) tempoEl.textContent = tab.tempo || '~95 BPM';
+  if (durationEl) durationEl.textContent = tab.duration || '03:30';
+  if (descEl) descEl.textContent = tab.description || 'Bản Video Tab được soạn chi tiết từng ô nhịp kèm file Guitar Pro & PDF sắc nét.';
+
+  // Xử lý Video Demo
+  if (videoEl && videoSrcEl && videoContainer) {
+    if (tab.hasDemo && tab.videoDemo) {
+      videoSrcEl.src = tab.videoDemo;
+      videoEl.load();
+      videoContainer.classList.remove('hidden');
+    } else {
+      videoContainer.classList.add('hidden');
+    }
+  }
 
   if (discountTag) {
     if (tab.discountNote) {
@@ -674,3 +784,175 @@ export function initModalListeners() {
     });
   }
 }
+
+// ==========================================================================
+// 4. ACOUSTIC GUITAR & CONCENTRIC TRIANGLE TRAIL CURSOR
+// ==========================================================================
+
+export function initCustomCursor() {
+  // Không kích hoạt custom cursor trên bất kỳ trang admin nào
+  if (window.location.pathname.includes('admin') || document.body.classList.contains('admin-page')) {
+    return;
+  }
+
+  // Chỉ chạy trên thiết bị có chuột (pointer: fine), không chạy trên touch
+  if (!window.matchMedia || !window.matchMedia('(pointer: fine)').matches) {
+    return;
+  }
+
+  // Dọn dẹp con trỏ cũ nếu có
+  const oldRing = document.getElementById('custom-cursor');
+  const oldDot = document.getElementById('custom-cursor-dot');
+  if (oldRing) oldRing.remove();
+  if (oldDot) oldDot.remove();
+
+  let container = document.getElementById('cursor-guitar-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'cursor-guitar-container';
+    document.body.appendChild(container);
+  }
+
+  // 1. Con trỏ chính: Cây đàn Acoustic Guitar
+  let guitarEl = document.getElementById('cursor-guitar');
+  if (!guitarEl) {
+    guitarEl = document.createElement('div');
+    guitarEl.id = 'cursor-guitar';
+    guitarEl.innerHTML = `
+      <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Đầu cần đàn & khóa đàn trỏ chính xác tại đỉnh (0,0) -->
+        <path d="M2 2L7 7M2 4L4 2M3 5L5 3" stroke="#C1602F" stroke-width="2" stroke-linecap="round"/>
+        <!-- Cần đàn & phím -->
+        <path d="M5 5L12 12" stroke="#2D231C" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M6 4L7 6M8 6L9 8M10 8L11 10" stroke="#F4EFE6" stroke-width="1.2"/>
+        <!-- Thùng đàn Acoustic dáng D/OM sắc nét -->
+        <path d="M13 10.5C14 9.5 16 9.5 17.5 11C19 12.5 19 14.5 18 15.5C17.5 16 17 16.5 17.5 17.5C18 18.5 17.5 20 16 21C14.5 22 12.5 21.5 11.5 20C10.5 18.5 10.5 18 10 17.5C9 16.5 9 14.5 10.5 13C12 11.5 12 11.5 13 10.5Z" fill="#C1602F" stroke="#8C3F18" stroke-width="1.2"/>
+        <!-- Lỗ thoát âm & ngựa đàn -->
+        <circle cx="14.5" cy="14.5" r="1.6" fill="#2D231C"/>
+        <rect x="15" y="16.5" width="2.8" height="1" rx="0.5" fill="#8C3F18" transform="rotate(-45 15 16.5)"/>
+      </svg>
+    `;
+    container.appendChild(guitarEl);
+  }
+
+  // 2. Tạo 6 hạt đuôi tam giác lồng nhau
+  const TRAIL_COUNT = 6;
+  const trailPoints = [];
+  const trailElements = [];
+
+  const triangleSvg = `
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Tam giác lớn ngoài -->
+      <polygon points="12,2 22,20 2,20" stroke="#C1602F" stroke-width="1.8" fill="rgba(193, 96, 47, 0.12)" stroke-linejoin="round"/>
+      <!-- Tam giác lồng bên trong -->
+      <polygon points="12,8 18,18 6,18" stroke="#E07A3F" stroke-width="1.4" fill="rgba(224, 122, 63, 0.35)" stroke-linejoin="round"/>
+      <!-- Tâm điểm -->
+      <circle cx="12" cy="14.5" r="1.2" fill="#C1602F"/>
+    </svg>
+  `;
+
+  for (let i = 0; i < TRAIL_COUNT; i++) {
+    const el = document.createElement('div');
+    el.className = 'triangle-trail-item cursor-hidden';
+    el.innerHTML = triangleSvg;
+    container.appendChild(el);
+    trailElements.push(el);
+
+    trailPoints.push({
+      x: -100,
+      y: -100,
+      scale: Math.max(0.25, 0.85 - (i * 0.12)),
+      opacity: Math.max(0.1, 0.85 - (i * 0.14)),
+      ease: 0.28 - (i * 0.025),
+      rotation: i * 15
+    });
+  }
+
+  let mouseX = -100;
+  let mouseY = -100;
+  let isMoving = false;
+
+  window.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+
+    guitarEl.style.left = `${mouseX}px`;
+    guitarEl.style.top = `${mouseY}px`;
+    guitarEl.classList.remove('cursor-hidden');
+
+    trailElements.forEach(el => el.classList.remove('cursor-hidden'));
+
+    if (!isMoving) {
+      isMoving = true;
+      requestAnimationFrame(renderTrail);
+    }
+  }, { passive: true });
+
+  function renderTrail() {
+    let leaderX = mouseX;
+    let leaderY = mouseY;
+    let hasDelta = false;
+
+    for (let i = 0; i < TRAIL_COUNT; i++) {
+      const p = trailPoints[i];
+      const el = trailElements[i];
+
+      p.x += (leaderX - p.x) * p.ease;
+      p.y += (leaderY - p.y) * p.ease;
+
+      el.style.left = `${p.x}px`;
+      el.style.top = `${p.y}px`;
+      el.style.transform = `translate(-50%, -50%) scale(${p.scale}) rotate(${p.rotation}deg)`;
+      el.style.opacity = p.opacity;
+
+      if (Math.abs(leaderX - p.x) > 0.1 || Math.abs(leaderY - p.y) > 0.1) {
+        hasDelta = true;
+      }
+
+      leaderX = p.x;
+      leaderY = p.y;
+    }
+
+    if (hasDelta) {
+      requestAnimationFrame(renderTrail);
+    } else {
+      isMoving = false;
+    }
+  }
+
+  document.addEventListener('mouseleave', () => {
+    guitarEl.classList.add('cursor-hidden');
+    trailElements.forEach(el => el.classList.add('cursor-hidden'));
+  });
+
+  document.addEventListener('mouseenter', () => {
+    guitarEl.classList.remove('cursor-hidden');
+    trailElements.forEach(el => el.classList.remove('cursor-hidden'));
+  });
+
+  // Event Delegation để bắt hover cho tất cả element tương tác
+  document.addEventListener('mouseover', (e) => {
+    const target = e.target.closest('a, button, input, textarea, select, details, summary, [role="button"], .song-card, .gear-card, .cinema-3d-card, .cursor-pointer, .cursor-zoom-in');
+    if (target) {
+      guitarEl.classList.add('cursor-hover');
+      container.classList.add('cursor-hover-trail');
+    }
+  });
+
+  document.addEventListener('mouseout', (e) => {
+    const target = e.target.closest('a, button, input, textarea, select, details, summary, [role="button"], .song-card, .gear-card, .cinema-3d-card, .cursor-pointer, .cursor-zoom-in');
+    if (target) {
+      guitarEl.classList.remove('cursor-hover');
+      container.classList.remove('cursor-hover-trail');
+    }
+  });
+}
+
+
+// Tự động khởi tạo cursor khi nạp common.js
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initCustomCursor);
+} else {
+  initCustomCursor();
+}
+

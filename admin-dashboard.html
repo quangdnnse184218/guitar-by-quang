@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bảng Quản Trị - Guitar By Quang</title>
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎸</text></svg>">
+
+  <!-- Google Font: Nunito -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400;1,700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind Custom Theme (script thường) -->
+  <script src="assets/theme-config.js"></script>
+  <!-- Custom CSS dùng chung -->
+  <link rel="stylesheet" href="assets/theme.css">
+</head>
+<body class="admin-page bg-[#F0EBE3] text-[#1A1614] min-h-screen flex flex-col selection:bg-terracotta-light selection:text-terracotta">
+
+  <!-- Top Navbar Admin (Warm Clean) -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-2 border-[#D6CFC4] px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full overflow-hidden border-2 border-terracotta/80 shadow-sm flex-shrink-0 bg-stone-200">
+        <img src="assets/avatar.jpg" alt="Admin" class="w-full h-full object-cover" />
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-extrabold text-[#1A1614] text-base tracking-tight">Guitar By Quang</span>
+          <span class="px-2 py-0.5 rounded-md bg-terracotta-light/60 text-terracotta text-[10px] font-black uppercase tracking-wider border border-terracotta/40">ADMIN</span>
+        </div>
+        <span id="admin-user-email" class="text-xs text-[#70655B] font-mono font-semibold hidden sm:inline-block">Đang tải...</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 sm:gap-3">
+      <a href="index.html" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-full bg-[#F4EFEA] hover:bg-[#EAE4DC] text-[#3A332C] border-2 border-[#D6CFC4] text-xs font-extrabold transition-colors flex items-center gap-1.5 shadow-xs">
+        <span>Xem Website</span>
+        <svg class="w-3.5 h-3.5 text-[#5C5147]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+      </a>
+      <button id="logout-btn" class="px-3.5 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 border-2 border-rose-200 text-xs font-extrabold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs">
+        <span>Đăng xuất</span>
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-8 py-8 space-y-6">
+
+    <!-- Header & Action Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b-2 border-[#D6CFC4]">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-black text-[#1A1614] tracking-tight">Quản Lý Kho Video Tab</h1>
+        <p class="text-xs sm:text-sm text-[#70655B] font-semibold mt-0.5">Thêm mới, chỉnh sửa thông tin hoặc xóa bài hát trên Firestore Database</p>
+      </div>
+
+      <button id="add-song-btn" class="px-5 py-2.5 rounded-full bg-warm-gradient hover:brightness-105 text-white font-black text-xs sm:text-sm transition-all shadow-glow active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        <span>Thêm Bài Hát Mới</span>
+      </button>
+    </div>
+
+    <!-- Quick Stats Cards (High Contrast) -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-white border-2 border-[#D6CFC4] shadow-md rounded-2xl p-5 flex items-center justify-between">
+        <div>
+          <span class="text-xs font-bold text-[#70655B] uppercase tracking-wider block">Tổng số bài hát</span>
+          <span id="stat-total" class="text-3xl font-black text-[#1A1614] mt-1 block">0</span>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-[#F4EFEA] text-charcoal border-2 border-[#D6CFC4] flex items-center justify-center text-2xl shadow-inner">🎸</div>
+      </div>
+      <div class="bg-white border-2 border-[#D6CFC4] shadow-md rounded-2xl p-5 flex items-center justify-between">
+        <div>
+          <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider block">Bài hát Miễn phí</span>
+          <span id="stat-free" class="text-3xl font-black text-emerald-800 mt-1 block">0</span>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 border-2 border-emerald-300 flex items-center justify-center text-2xl shadow-inner">✨</div>
+      </div>
+      <div class="bg-white border-2 border-[#D6CFC4] shadow-md rounded-2xl p-5 flex items-center justify-between">
+        <div>
+          <span class="text-xs font-bold text-amber-900 uppercase tracking-wider block">Bài hát Trả phí</span>
+          <span id="stat-paid" class="text-3xl font-black text-terracotta mt-1 block">0</span>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-terracotta border-2 border-amber-300 flex items-center justify-center text-2xl shadow-inner">💎</div>
+      </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border-2 border-[#D6CFC4] shadow-md">
+      <div class="relative w-full sm:w-80">
+        <input
+          type="text"
+          id="admin-search"
+          placeholder="Tìm theo tên bài hát hoặc ID..."
+          class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-xs font-bold text-[#1A1614] placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-all"
+        />
+        <svg class="w-4 h-4 text-[#8C827A] absolute left-3 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+
+      <button id="refresh-btn" class="px-4 py-2.5 rounded-xl bg-[#F4EFEA] hover:bg-[#EAE4DC] text-xs font-black text-[#3A332C] border-2 border-[#D6CFC4] transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs">
+        <svg class="w-3.5 h-3.5 text-[#5C5147]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <span>Làm mới danh sách</span>
+      </button>
+    </div>
+
+    <!-- Songs Table (High Contrast & Clear Boundaries) -->
+    <div class="bg-white border-2 border-[#D6CFC4] rounded-2xl overflow-hidden shadow-md">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-[#1A1614]">
+          <thead class="bg-[#E5DCD0]/80 text-[#3A332C] font-extrabold text-xs uppercase tracking-wider border-b-2 border-[#D6CFC4]">
+            <tr>
+              <th class="py-4 px-4 w-12 text-center">STT</th>
+              <th class="py-4 px-4">Tên Bài Hát / ID</th>
+              <th class="py-4 px-4">Thể Loại</th>
+              <th class="py-4 px-4">Độ Khó</th>
+              <th class="py-4 px-4">Phân Loại</th>
+              <th class="py-4 px-4">Giá Bán</th>
+              <th class="py-4 px-4 text-right">Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody id="songs-table-body" class="divide-y divide-[#E3DBD0] font-medium">
+            <tr>
+              <td colspan="7" class="py-8 text-center text-[#70655B] font-bold">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-4 h-4 border-2 border-terracotta border-t-transparent rounded-full animate-spin"></div>
+                  <span>Đang tải dữ liệu từ Firestore...</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: THÊM / SỬA BÀI HÁT (Warm Clean Dialog High Contrast) -->
+  <div id="song-form-modal" role="dialog" aria-modal="true" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-charcoal/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="modal-dialog relative w-full max-w-2xl bg-white text-[#1A1614] rounded-3xl p-6 sm:p-8 shadow-2xl border-2 border-[#D6CFC4] max-h-[92vh] overflow-y-auto scale-95 transition-transform duration-300">
+
+      <button id="close-modal-btn" class="absolute top-5 right-5 p-2 rounded-full text-[#70655B] hover:text-[#1A1614] hover:bg-[#F4EFEA] transition-colors z-10 cursor-pointer" aria-label="Đóng form">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="space-y-1 mb-6">
+        <span class="text-xs font-mono font-bold uppercase tracking-wider text-terracotta">Firestore Collection: songs</span>
+        <h2 id="modal-form-title" class="text-xl sm:text-2xl font-black text-[#1A1614]">Thêm Bài Hát Mới</h2>
+      </div>
+
+      <form id="song-form" class="space-y-4 text-xs" novalidate>
+        <input type="hidden" id="form-song-id" value="" />
+
+        <!-- Row 1: Tên bài & Thể loại -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div class="space-y-1.5">
+            <label class="font-bold text-[#1A1614] block">Tên Bài Hát <span class="text-terracotta">*</span></label>
+            <input type="text" id="form-title" required placeholder="Ví dụ: Nơi Này Có Anh" class="w-full px-3.5 py-2.5 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-all" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="font-bold text-[#1A1614] block">Thể Loại</label>
+            <input type="text" id="form-category" placeholder="Nhạc Việt / Nhạc Ngoại / Anime..." value="Nhạc Việt" class="w-full px-3.5 py-2.5 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-all" />
+          </div>
+        </div>
+
+        <!-- Row 2: Độ khó & Điểm số -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div class="space-y-1.5">
+            <label class="font-bold text-[#1A1614] block">Độ Khó Hiển Thị (level)</label>
+            <input type="text" id="form-level" placeholder="4/10 hoặc 9/10" value="4/10" class="w-full px-3.5 py-2.5 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-all" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="font-bold text-[#1A1614] block">Độ Khó Số (levelNum: 1 - 10)</label>
+            <input type="number" id="form-levelNum" min="1" max="10" value="4" class="w-full px-3.5 py-2.5 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-all" />
+          </div>
+        </div>
+
+        <!-- Row 3: Phân loại Free / Bán -->
+        <div class="p-4 rounded-2xl bg-[#F8F5F0] border-2 border-[#D6CFC4] space-y-3">
+          <div class="flex items-center gap-3">
+            <input type="checkbox" id="form-isFree" class="w-4 h-4 rounded text-terracotta focus:ring-0 cursor-pointer" />
+            <label for="form-isFree" class="font-black text-emerald-800 cursor-pointer select-none">✨ Bài hát Miễn Phí (100% Free)</label>
+          </div>
+
+          <div id="price-fields" class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+            <div class="space-y-1">
+              <label class="font-bold text-[#5C5147] block">Giá tiền số (price)</label>
+              <input type="number" id="form-price" placeholder="239000" value="239000" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:outline-none focus:border-terracotta" />
+            </div>
+            <div class="space-y-1">
+              <label class="font-bold text-[#5C5147] block">Giá hiển thị (priceFormatted)</label>
+              <input type="text" id="form-priceFormatted" placeholder="239.000đ" value="239.000đ" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:outline-none focus:border-terracotta" />
+            </div>
+            <div class="space-y-1">
+              <label class="font-bold text-[#5C5147] block">Ghi chú ưu đãi</label>
+              <input type="text" id="form-discountNote" placeholder="HSSV ưu đãi còn 179k" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:outline-none focus:border-terracotta" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 4: Tuning, Duration, Capo, Tempo -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="space-y-1.5">
+            <label class="font-bold text-[#1A1614] block">Tuning</label>
+            <input type="text" id="form-tuning" placeholder="Standard" value="Standard" class="w-full px-3 py-2 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="font-bold text-[#1A1614] block">Thời Lượng</label>
+            <input type="text" id="form-duration" placeholder="03:40" value="03:30" class="w-full px-3 py-2 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="font-bold text-[#1A1614] block">Kẹp Capo</label>
+            <input type="text" id="form-capo" placeholder="Không kẹp / Ngăn 2" value="Không kẹp" class="w-full px-3 py-2 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="font-bold text-[#1A1614] block">Tempo (BPM)</label>
+            <input type="text" id="form-tempo" placeholder="~95 BPM" value="~95 BPM" class="w-full px-3 py-2 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta" />
+          </div>
+        </div>
+
+        <!-- Row 5: Mô tả -->
+        <div class="space-y-1.5">
+          <label class="font-bold text-[#1A1614] block">Mô Tả & Hướng Dẫn Kỹ Thuật</label>
+          <textarea id="form-description" rows="2" placeholder="Ghi chú về nhịp gõ, nốt luyến láy, đoạn khó cần chú ý..." class="w-full px-3.5 py-2 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta"></textarea>
+        </div>
+
+        <!-- Row 6: Video Demo & Target URL -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2 mb-1">
+              <input type="checkbox" id="form-hasDemo" checked class="w-4 h-4 rounded text-terracotta focus:ring-0 cursor-pointer" />
+              <label for="form-hasDemo" class="font-black text-[#1A1614] cursor-pointer select-none">Có Video Demo</label>
+            </div>
+            <input type="text" id="form-videoDemo" placeholder="assets/resg1ctkdemo.mp4 hoặc URL" class="w-full px-3.5 py-2 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="font-bold text-[#1A1614] block">Link Video Tab / YouTube / TikTok</label>
+            <input type="text" id="form-targetUrl" placeholder="https://youtu.be/... hoặc link drive" class="w-full px-3.5 py-2 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta" />
+          </div>
+        </div>
+
+        <!-- Row 7: Nút bấm CTA & Background Card -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="space-y-1.5">
+            <label class="font-bold text-[#1A1614] block">Loại Nút (buttonType)</label>
+            <select id="form-buttonType" class="w-full px-3 py-2 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold focus:bg-white focus:outline-none focus:border-terracotta cursor-pointer">
+              <option value="buy">buy (Mua Video Tab)</option>
+              <option value="link">link (Mở link ngoài)</option>
+            </select>
+          </div>
+          <div class="space-y-1.5">
+            <label class="font-bold text-[#1A1614] block">Chữ Trên Nút (buttonText)</label>
+            <input type="text" id="form-buttonText" value="Mua Video Tab" class="w-full px-3 py-2 rounded-xl bg-[#FBF9F6] border-2 border-[#D6CFC4] text-[#1A1614] font-semibold placeholder-[#8C827A] focus:bg-white focus:outline-none focus:border-terracotta" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="font-bold text-[#2D2826] block">Nền Gradient (thumbnailBg)</label>
+            <select id="form-thumbnailBg" class="w-full px-3 py-2 rounded-xl bg-[#FBF9F6] border border-[#DCD5CB] text-[#2D2826] focus:bg-white focus:outline-none focus:border-terracotta cursor-pointer">
+              <option value="from-[#C1602F] to-[#6E3B1F]">Cam Đất (Terracotta)</option>
+              <option value="from-[#2D4A3E] to-[#20362C]">Xanh Rêu (Emerald)</option>
+              <option value="from-[#CBB79E] to-[#7E9885]">Beige - Xanh Xám</option>
+              <option value="from-[#D9C3A0] to-[#8C6E8A]">Beige - Tím Mộc</option>
+              <option value="from-[#C7B49C] to-[#6B5844]">Gỗ Mộc (Wood)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="pt-4 flex items-center justify-end gap-3 border-t border-[#E6DFD5]">
+          <button type="button" id="cancel-form-btn" class="px-5 py-2.5 rounded-full bg-[#F4EFEA] hover:bg-[#EAE4DC] text-[#4A423D] border border-[#E0D8CE] font-bold text-xs transition-colors cursor-pointer">
+            Hủy Bỏ
+          </button>
+          <button type="submit" id="save-song-btn" class="px-6 py-2.5 rounded-full bg-warm-gradient hover:brightness-105 text-white font-bold text-xs transition-all shadow-glow cursor-pointer flex items-center gap-2">
+            <span id="save-btn-text">Lưu Bài Hát</span>
+            <div id="save-spinner" class="hidden w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-notification" class="fixed top-6 right-6 z-50 bg-charcoal text-canvas text-xs font-bold px-5 py-3 rounded-full shadow-float flex items-center gap-2.5 transition-all duration-300 opacity-0 -translate-y-4 pointer-events-none border border-charcoal-border/50">
+    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    <span id="toast-message">Thông báo</span>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="firebase-auth-service.js"></script>
+  <script type="module" src="firebase-service.js"></script>
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

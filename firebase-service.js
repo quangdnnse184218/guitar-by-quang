@@ -15,6 +15,9 @@ import {
   collection,
   getDocs,
   getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
   doc,
   orderBy,
   query
@@ -32,12 +35,12 @@ const SONGS_COLLECTION = 'songs';
  */
 export async function fetchAllSongs() {
   try {
-    // Sắp xếp theo id để giữ đúng thứ tự tab-1, tab-2, ... tab-10
+    // Sắp xếp theo id để giữ đúng thứ tự
     const q = query(collection(db, SONGS_COLLECTION), orderBy('__name__'));
     const snapshot = await getDocs(q);
 
     if (snapshot.empty) {
-      console.warn('[GuitarByQuang] Firestore: collection "songs" trống hoặc chưa có data. Chạy seed script nhé!');
+      console.warn('[GuitarByQuang] Firestore: collection "songs" trống hoặc chưa có data.');
       return [];
     }
 
@@ -55,8 +58,6 @@ export async function fetchAllSongs() {
 
 /**
  * Lấy thông tin 1 bài hát theo ID.
- * Dùng cho openCheckoutModal() — nhưng hiện tại hàm đó vẫn đọc từ
- * biến tabsData trong bộ nhớ nên hàm này là dự phòng / dùng cho giai đoạn sau.
  *
  * @param {string} id - Document ID (ví dụ: "tab-1")
  * @returns {Promise<Object|null>}
@@ -78,5 +79,129 @@ export async function fetchSongById(id) {
   } catch (error) {
     console.error(`[GuitarByQuang] Lỗi khi fetch bài hát id="${id}" từ Firestore:`, error);
     return null;
+  }
+}
+
+/**
+ * Tạo slug ID chuẩn hóa từ tiêu đề bài hát tiếng Việt
+ * Ví dụ: "Nơi Này Có Anh" -> "noi-nay-co-anh"
+ * @param {string} title
+ * @returns {string}
+ */
+export function generateSlugId(title) {
+  if (!title) return `song-${Date.now()}`;
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Bỏ dấu tiếng Việt
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd')
+    .replace(/[^a-z0-9\s-]/g, '') // Bỏ ký tự đặc biệt
+    .trim()
+    .replace(/\s+/g, '-') // Thay khoảng trắng bằng -
+    .replace(/-+/g, '-'); // Tránh dấu -- liên tiếp
+}
+
+/**
+ * Kiểm tra xem ID bài hát đã tồn tại trong collection chưa
+ * @param {string} id
+ * @returns {Promise<boolean>}
+ */
+export async function checkSongIdExists(id) {
+  try {
+    const docRef = doc(db, SONGS_COLLECTION, id);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists();
+  } catch (error) {
+    console.error(`[GuitarByQuang] Lỗi kiểm tra tồn tại id="${id}":`, error);
+    return false;
+  }
+}
+
+/**
+ * Thêm bài hát mới vào Firestore.
+ * Tự sinh Slug ID, kiểm tra trùng (nếu trùng tự thêm -2, -3) rồi lưu.
+ * @param {Object} songData
+ * @returns {Promise<{success: boolean, id?: string, error?: string}>}
+ */
+export async function createSong(songData) {
+  try {
+    if (!songData || !songData.title) {
+      return { success: false, error: 'Tiêu đề bài hát không được để trống.' };
+    }
+
+    // Tự sinh ID slug
+    let baseSlug = generateSlugId(songData.title);
+    let targetId = baseSlug;
+    let counter = 2;
+
+    while (await checkSongIdExists(targetId)) {
+      targetId = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    // Clone dữ liệu và bỏ field id nếu có (vì Firestore dùng doc id)
+    const dataToSave = { ...songData };
+    delete dataToSave.id;
+
+    // Đảm bảo kiểu dữ liệu đúng schema
+    dataToSave.levelNum = Number(dataToSave.levelNum) || 5;
+    dataToSave.price = Number(dataToSave.price) || 0;
+    dataToSave.isFree = Boolean(dataToSave.isFree);
+    dataToSave.hasDemo = Boolean(dataToSave.hasDemo);
+
+    await setDoc(doc(db, SONGS_COLLECTION, targetId), dataToSave);
+    return { success: true, id: targetId };
+  } catch (error) {
+    console.error('[GuitarByQuang] Lỗi khi tạo bài hát mới:', error);
+    return { success: false, error: 'Không thể thêm bài hát. Vui lòng thử lại.' };
+  }
+}
+
+/**
+ * Cập nhật bài hát đã có trong Firestore
+ * @param {string} id - Document ID
+ * @param {Object} songData - Dữ liệu cập nhật
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function updateSong(id, songData) {
+  try {
+    if (!id) {
+      return { success: false, error: 'Không tìm thấy ID bài hát để cập nhật.' };
+    }
+
+    const dataToSave = { ...songData };
+    delete dataToSave.id;
+
+    if (dataToSave.levelNum !== undefined) dataToSave.levelNum = Number(dataToSave.levelNum);
+    if (dataToSave.price !== undefined) dataToSave.price = Number(dataToSave.price);
+    if (dataToSave.isFree !== undefined) dataToSave.isFree = Boolean(dataToSave.isFree);
+    if (dataToSave.hasDemo !== undefined) dataToSave.hasDemo = Boolean(dataToSave.hasDemo);
+
+    const docRef = doc(db, SONGS_COLLECTION, id);
+    await updateDoc(docRef, dataToSave);
+    return { success: true };
+  } catch (error) {
+    console.error(`[GuitarByQuang] Lỗi khi cập nhật bài hát id="${id}":`, error);
+    return { success: false, error: 'Không thể cập nhật bài hát. Vui lòng thử lại.' };
+  }
+}
+
+/**
+ * Xóa bài hát khỏi Firestore
+ * @param {string} id - Document ID
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function deleteSong(id) {
+  try {
+    if (!id) {
+      return { success: false, error: 'Không tìm thấy ID bài hát để xóa.' };
+    }
+    const docRef = doc(db, SONGS_COLLECTION, id);
+    await deleteDoc(docRef);
+    return { success: true };
+  } catch (error) {
+    console.error(`[GuitarByQuang] Lỗi khi xóa bài hát id="${id}":`, error);
+    return { success: false, error: 'Không thể xóa bài hát. Vui lòng thử lại.' };
   }
 }

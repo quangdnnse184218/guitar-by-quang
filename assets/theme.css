@@ -1,5 +1,133 @@
+/* ========================================== */
+/* GSAP 3D SCROLL CINEMA & PERSPECTIVE UTILS  */
+/* ========================================== */
+
+.perspective-container {
+  perspective: 1200px;
+}
+
+.perspective-card {
+  perspective: 800px;
+}
+
+.transform-3d {
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.cinema-3d-card {
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+  will-change: transform;
+}
+
+.cinema-3d-card:hover {
+  transform: translateY(-8px) rotateX(3deg) rotateY(-2deg) scale(1.02);
+  box-shadow: 0 25px 40px -15px rgba(60, 40, 20, 0.18);
+}
+
+/* ========================================== */
+/* ACOUSTIC GUITAR & TRIANGLE TRAIL CURSOR   */
+/* ========================================== */
+
+@media (pointer: fine) {
+  /* Ẩn con trỏ chuột mặc định trên Desktop khi dùng Custom Cursor (trừ các trang Admin) */
+  body:not(.admin-page),
+  body:not(.admin-page) a,
+  body:not(.admin-page) button,
+  body:not(.admin-page) input,
+  body:not(.admin-page) textarea,
+  body:not(.admin-page) select,
+  body:not(.admin-page) details,
+  body:not(.admin-page) summary,
+  body:not(.admin-page) [role="button"],
+  body:not(.admin-page) .song-card,
+  body:not(.admin-page) .gear-card,
+  body:not(.admin-page) .cinema-3d-card,
+  body:not(.admin-page) .cursor-pointer,
+  body:not(.admin-page) .cursor-zoom-in {
+    cursor: none !important;
+  }
+
+  /* Khôi phục hoàn toàn con trỏ hệ thống cho Admin */
+  body.admin-page,
+  body.admin-page * {
+    cursor: auto !important;
+  }
+  body.admin-page button,
+  body.admin-page a,
+  body.admin-page [role="button"],
+  body.admin-page summary,
+  body.admin-page .cursor-pointer {
+    cursor: pointer !important;
+  }
+  body.admin-page input,
+  body.admin-page textarea,
+  body.admin-page select {
+    cursor: text !important;
+  }
+
+  #cursor-guitar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    z-index: 99999;
+    will-change: transform;
+  }
+
+  #cursor-guitar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 100000;
+    transform: translate(-3px, -3px) rotate(-15deg);
+    transition: transform 0.15s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.2s ease, filter 0.2s ease;
+    filter: drop-shadow(0 2px 5px rgba(193, 96, 47, 0.4));
+    will-change: transform;
+  }
+
+  #cursor-guitar.cursor-hover {
+    transform: translate(-4px, -4px) rotate(-35deg) scale(1.22);
+    filter: drop-shadow(0 4px 10px rgba(193, 96, 47, 0.7));
+  }
+
+  .triangle-trail-item {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 99998;
+    transform: translate(-50%, -50%);
+    will-change: transform, opacity;
+    transition: opacity 0.2s ease, filter 0.2s ease;
+  }
+
+  .cursor-hover-trail .triangle-trail-item {
+    filter: drop-shadow(0 0 4px rgba(224, 122, 63, 0.6));
+  }
+
+  .cursor-hidden {
+    opacity: 0 !important;
+  }
+}
+
+@media (pointer: coarse) {
+  #cursor-guitar-container,
+  #cursor-guitar,
+  .triangle-trail-item {
+    display: none !important;
+  }
+}
+
+
+
 /**
- * GUITAR BY QUANG — theme.css
  * Custom CSS dùng chung cho tất cả trang.
  * Được tách ra từ <style> inline trong index.html để tránh duplicate.
  */
