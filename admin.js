@@ -1,16 +1,35 @@
 /**
- * GUITAR BY QUANG — admin.js
+ * GUITAR BY QUANG - admin.js
  * Controller cho trang admin-dashboard.html
- * Quản lý CRUD bài hát (fetch, create, update, delete) qua Firebase Service
+ * Tich hop: Segmented Toggle Free/Paid, auto-computed schema fields, Firebase Storage upload.
  */
 
 import { onAuthChange, logoutAdmin } from './firebase-auth-service.js';
-import { fetchAllSongs, createSong, updateSong, deleteSong } from './firebase-service.js';
+import { fetchAllSongs, createSong, updateSong, deleteSong, uploadMediaFile } from './firebase-service.js';
 
 let currentSongsList = [];
 
+// Auto-computed defaults theo loai bai
+const FREE_DEFAULTS = {
+  isFree: true,
+  price: 0,
+  priceFormatted: '0d',
+  discountNote: '',
+  buttonType: 'free_modal',
+  buttonText: 'Xem Video Tab',
+  thumbnailBg: 'bg-gradient-to-br from-charcoal to-[#231e1b]',
+};
+
+const PAID_DEFAULTS = {
+  isFree: false,
+  targetUrl: '',
+  buttonType: 'checkout_modal',
+  buttonText: 'Xem chi tiet \u2192',
+  thumbnailBg: 'bg-gradient-to-br from-[#2D2421] to-[#1C1614]',
+};
+
 // ============================================================
-// 1. ROUTE GUARD (Kiểm tra phiên đăng nhập)
+// 1. ROUTE GUARD
 // ============================================================
 onAuthChange((user) => {
   if (!user) {
@@ -21,23 +40,32 @@ onAuthChange((user) => {
   }
 });
 
-// Toast notification helper
+// ============================================================
+// TOAST
+// ============================================================
 function showAdminToast(message, isSuccess = true) {
   const toast = document.getElementById('toast-notification');
   const toastMsg = document.getElementById('toast-message');
   if (!toast || !toastMsg) return;
 
   toastMsg.textContent = message;
+  const icon = toast.querySelector('svg');
+  if (icon) {
+    icon.classList.toggle('text-emerald-400', isSuccess);
+    icon.classList.toggle('text-rose-400', !isSuccess);
+  }
   toast.classList.remove('opacity-0', '-translate-y-4', 'pointer-events-none');
   toast.classList.add('opacity-100', 'translate-y-0');
 
   setTimeout(() => {
     toast.classList.remove('opacity-100', 'translate-y-0');
     toast.classList.add('opacity-0', '-translate-y-4', 'pointer-events-none');
-  }, 3000);
+  }, 3500);
 }
 
-// Modal Form Toggle
+// ============================================================
+// MODAL TOGGLE
+// ============================================================
 function toggleSongModal(show) {
   const modal = document.getElementById('song-form-modal');
   if (!modal) return;
@@ -50,18 +78,46 @@ function toggleSongModal(show) {
     dialog.classList.toggle('scale-100', show);
   }
 }
+
 // ============================================================
-// 2. RENDER BẢNG BÀI HÁT
+// SEGMENTED TOGGLE - Free vs Paid UI
+// ============================================================
+function setTabType(isFree) {
+  const freeBtn    = document.getElementById('toggle-free-btn');
+  const paidBtn    = document.getElementById('toggle-paid-btn');
+  const branchFree = document.getElementById('branch-free');
+  const branchPaid = document.getElementById('branch-paid');
+  const isFreeHidden = document.getElementById('form-isFree');
+
+  if (!freeBtn || !paidBtn) return;
+
+  if (isFree) {
+    freeBtn.className = 'tab-type-btn px-5 py-2.5 text-xs font-black flex items-center gap-1.5 transition-colors duration-200 bg-emerald-600 text-white';
+    paidBtn.className = 'tab-type-btn px-5 py-2.5 text-xs font-black flex items-center gap-1.5 transition-colors duration-200 bg-white text-[#5C5147] hover:bg-[#F4EFEA]';
+    branchFree?.classList.remove('hidden');
+    branchPaid?.classList.add('hidden');
+  } else {
+    paidBtn.className = 'tab-type-btn px-5 py-2.5 text-xs font-black flex items-center gap-1.5 transition-colors duration-200 bg-amber-600 text-white';
+    freeBtn.className = 'tab-type-btn px-5 py-2.5 text-xs font-black flex items-center gap-1.5 transition-colors duration-200 bg-white text-[#5C5147] hover:bg-[#F4EFEA]';
+    branchFree?.classList.add('hidden');
+    branchPaid?.classList.remove('hidden');
+  }
+
+  if (isFreeHidden) isFreeHidden.value = isFree ? 'true' : 'false';
+}
+
+// ============================================================
+// 2. RENDER BANG BAI HAT
 // ============================================================
 function renderSongsTable(songs) {
-  const tbody = document.getElementById('songs-table-body');
+  const tbody    = document.getElementById('songs-table-body');
   const statTotal = document.getElementById('stat-total');
-  const statFree = document.getElementById('stat-free');
-  const statPaid = document.getElementById('stat-paid');
+  const statFree  = document.getElementById('stat-free');
+  const statPaid  = document.getElementById('stat-paid');
 
   if (statTotal) statTotal.textContent = songs.length;
-  if (statFree) statFree.textContent = songs.filter(s => s.isFree).length;
-  if (statPaid) statPaid.textContent = songs.filter(s => !s.isFree).length;
+  if (statFree)  statFree.textContent  = songs.filter(s => s.isFree).length;
+  if (statPaid)  statPaid.textContent  = songs.filter(s => !s.isFree).length;
 
   if (!tbody) return;
 
@@ -69,7 +125,7 @@ function renderSongsTable(songs) {
     tbody.innerHTML = `
       <tr>
         <td colspan="7" class="py-8 text-center text-[#8C827A]">
-          Chưa có bài hát nào trong kho. Hãy bấm "+ Thêm Bài Hát Mới" để tạo nhé!
+          Chua co bai hat nao trong kho. Hay bam "+ Them Bai Hat Moi" de tao nhe!
         </td>
       </tr>
     `;
@@ -80,7 +136,7 @@ function renderSongsTable(songs) {
     const isFree = Boolean(song.isFree);
     const badgeType = isFree
       ? '<span class="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300 text-[10px] font-black uppercase">FREE</span>'
-      : '<span class="px-2.5 py-0.5 rounded-md bg-orange-100 text-orange-900 border border-orange-300 text-[10px] font-black uppercase">BÁN</span>';
+      : '<span class="px-2.5 py-0.5 rounded-md bg-orange-100 text-orange-900 border border-orange-300 text-[10px] font-black uppercase">BAN</span>';
 
     return `
       <tr class="hover:bg-[#F7F4F0] transition-colors border-b border-[#E3DBD0] group">
@@ -89,19 +145,19 @@ function renderSongsTable(songs) {
           <div class="font-black text-[#1A1614] text-sm group-hover:text-terracotta transition-colors">${song.title}</div>
           <div class="text-[11px] font-mono text-[#8C827A] font-semibold">ID: ${song.id}</div>
         </td>
-        <td class="py-4 px-4 text-[#4A4036] font-bold">${song.category || 'Nhạc Việt'}</td>
+        <td class="py-4 px-4 text-[#4A4036] font-bold">${song.category || 'Nhac Viet'}</td>
         <td class="py-4 px-4">
           <span class="font-black text-terracotta">${song.level || '4/10'}</span>
         </td>
         <td class="py-4 px-4">${badgeType}</td>
-        <td class="py-4 px-4 font-mono font-black text-[#1A1614] text-sm">${isFree ? '0đ' : (song.priceFormatted || '239.000đ')}</td>
+        <td class="py-4 px-4 font-mono font-black text-[#1A1614] text-sm">${isFree ? '0d' : (song.priceFormatted || '239.000d')}</td>
         <td class="py-4 px-4 text-right">
           <div class="flex items-center justify-end gap-1.5">
             <button onclick="handleEditSong('${song.id}')" class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-extrabold text-xs transition-colors cursor-pointer shadow-xs">
-              Sửa
+              Sua
             </button>
             <button onclick="handleDeleteSong('${song.id}', '${song.title.replace(/'/g, "\\'")}')" class="px-3 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 font-extrabold text-xs transition-colors cursor-pointer shadow-xs">
-              Xóa
+              Xoa
             </button>
           </div>
         </td>
@@ -117,64 +173,126 @@ async function loadSongs() {
 }
 
 // ============================================================
+// FORM RESET HELPER
+// ============================================================
+function resetFormForNew() {
+  const form = document.getElementById('song-form');
+  if (form) form.reset();
+
+  document.getElementById('form-song-id').value        = '';
+  document.getElementById('form-category').value       = 'Nhac Viet';
+  document.getElementById('form-level').value          = '4/10';
+  document.getElementById('form-levelNum').value       = 4;
+  document.getElementById('form-tuning').value         = 'Standard';
+  document.getElementById('form-duration').value       = '03:30';
+  document.getElementById('form-capo').value           = 'Khong kep';
+  document.getElementById('form-tempo').value          = '~95 BPM';
+  document.getElementById('form-description').value    = '';
+  document.getElementById('form-hasDemo').checked      = true;
+  document.getElementById('form-videoDemo').value      = '';
+  document.getElementById('form-targetUrl').value      = '';
+  document.getElementById('form-price').value          = 239000;
+  document.getElementById('form-priceFormatted').value = '239.000d';
+  document.getElementById('form-discountNote').value   = '';
+
+  setTabType(true);
+}
+
+// ============================================================
 // 3. EDIT & DELETE HANDLERS
 // ============================================================
 window.handleEditSong = function(songId) {
   const song = currentSongsList.find(s => s.id === songId);
   if (!song) return;
 
-  const modalTitle = document.getElementById('modal-form-title');
-  const saveBtnText = document.getElementById('save-btn-text');
-  if (modalTitle) modalTitle.textContent = `Chỉnh Sửa: ${song.title}`;
-  if (saveBtnText) saveBtnText.textContent = 'Lưu Thay Đổi';
+  document.getElementById('modal-form-title').textContent = 'Chinh Sua: ' + song.title;
+  document.getElementById('save-btn-text').textContent    = 'Luu Thay Doi';
 
-  document.getElementById('form-song-id').value = song.id;
-  document.getElementById('form-title').value = song.title || '';
-  document.getElementById('form-category').value = song.category || 'Nhạc Việt';
-  document.getElementById('form-level').value = song.level || '4/10';
-  document.getElementById('form-levelNum').value = song.levelNum || 4;
+  document.getElementById('form-song-id').value         = song.id;
+  document.getElementById('form-title').value           = song.title || '';
+  document.getElementById('form-category').value        = song.category || 'Nhac Viet';
+  document.getElementById('form-level').value           = song.level || '4/10';
+  document.getElementById('form-levelNum').value        = song.levelNum || 4;
+  document.getElementById('form-tuning').value          = song.tuning || 'Standard';
+  document.getElementById('form-duration').value        = song.duration || '03:30';
+  document.getElementById('form-capo').value            = song.capo || 'Khong kep';
+  document.getElementById('form-tempo').value           = song.tempo || '~95 BPM';
+  document.getElementById('form-description').value     = song.description || '';
+  document.getElementById('form-hasDemo').checked       = Boolean(song.hasDemo);
+  document.getElementById('form-videoDemo').value       = song.videoDemo || '';
+  document.getElementById('form-targetUrl').value       = song.targetUrl || '';
+  document.getElementById('form-price').value           = song.price || 0;
+  document.getElementById('form-priceFormatted').value  = song.priceFormatted || '239.000d';
+  document.getElementById('form-discountNote').value    = song.discountNote || '';
 
-  const isFree = Boolean(song.isFree);
-  document.getElementById('form-isFree').checked = isFree;
-  document.getElementById('form-price').value = song.price || 0;
-  document.getElementById('form-priceFormatted').value = song.priceFormatted || (isFree ? 'Miễn phí' : '239.000đ');
-  document.getElementById('form-discountNote').value = song.discountNote || '';
-
-  document.getElementById('form-tuning').value = song.tuning || 'Standard';
-  document.getElementById('form-duration').value = song.duration || '03:30';
-  document.getElementById('form-capo').value = song.capo || 'Không kẹp';
-  document.getElementById('form-tempo').value = song.tempo || '~95 BPM';
-  document.getElementById('form-description').value = song.description || '';
-
-  document.getElementById('form-hasDemo').checked = Boolean(song.hasDemo);
-  document.getElementById('form-videoDemo').value = song.videoDemo || '';
-  document.getElementById('form-targetUrl').value = song.targetUrl || '';
-  document.getElementById('form-buttonType').value = song.buttonType || (isFree ? 'link' : 'buy');
-  document.getElementById('form-buttonText').value = song.buttonText || (isFree ? 'Tải video tab' : 'Mua Video Tab');
-  document.getElementById('form-thumbnailBg').value = song.thumbnailBg || 'from-[#C1602F] to-[#6E3B1F]';
-
+  setTabType(Boolean(song.isFree));
   toggleSongModal(true);
 };
 
 window.handleDeleteSong = async function(songId, songTitle) {
-  const ok = confirm(`Bạn có chắc chắn muốn xóa bài "${songTitle}" (ID: ${songId}) khỏi Firestore không?\nHành động này không thể hoàn tác.`);
+  const ok = confirm('Ban co chac chan muon xoa bai "' + songTitle + '" (ID: ' + songId + ') khoi Firestore khong?\nHanh dong nay khong the hoan tac.');
   if (!ok) return;
 
   const res = await deleteSong(songId);
   if (res.success) {
-    showAdminToast(`Đã xóa bài hát "${songTitle}" thành công!`);
+    showAdminToast('Da xoa bai hat "' + songTitle + '" thanh cong!');
     await loadSongs();
   } else {
-    showAdminToast(res.error || 'Lỗi khi xóa bài hát', false);
+    showAdminToast(res.error || 'Loi khi xoa bai hat', false);
   }
 };
+
 // ============================================================
-// 4. DOM READY EVENT LISTENERS
+// UPLOAD HELPER
+// ============================================================
+function setupUploadButton(btnId, fileInputId, urlInputId, progressId, progressTextId, progressBarId, folder) {
+  const btn       = document.getElementById(btnId);
+  const fileInput = document.getElementById(fileInputId);
+  const urlInput  = document.getElementById(urlInputId);
+  const progressWrapper = document.getElementById(progressId);
+  const progressText    = document.getElementById(progressTextId);
+  const progressBar     = document.getElementById(progressBarId);
+
+  if (!btn || !fileInput) return;
+
+  btn.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (progressWrapper) progressWrapper.classList.remove('hidden');
+    if (progressText) progressText.textContent = 'Dang tai len... 0%';
+    if (progressBar)  progressBar.style.width = '0%';
+    btn.disabled = true;
+    btn.textContent = 'dang tai...';
+
+    const result = await uploadMediaFile(file, folder, (pct) => {
+      if (progressText) progressText.textContent = 'Dang tai len... ' + pct + '%';
+      if (progressBar)  progressBar.style.width = pct + '%';
+    });
+
+    btn.disabled = false;
+    btn.textContent = 'Upload';
+    fileInput.value = '';
+
+    if (result.success) {
+      if (urlInput) urlInput.value = result.url;
+      if (progressWrapper) progressWrapper.classList.add('hidden');
+      showAdminToast('Upload thanh cong! URL da duoc dien tu dong');
+    } else {
+      if (progressWrapper) progressWrapper.classList.add('hidden');
+      showAdminToast(result.error || 'Upload that bai, thu lai nhe.', false);
+    }
+  });
+}
+
+// ============================================================
+// 4. DOM READY
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   loadSongs();
 
-  // Đăng xuất
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
@@ -183,68 +301,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Nút Làm mới
   const refreshBtn = document.getElementById('refresh-btn');
   if (refreshBtn) {
     refreshBtn.addEventListener('click', () => {
       loadSongs();
-      showAdminToast('Đã làm mới danh sách bài hát');
+      showAdminToast('Da lam moi danh sach bai hat');
     });
   }
 
-  // Tìm kiếm nhanh
   const searchInput = document.getElementById('admin-search');
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
       const q = e.target.value.toLowerCase().trim();
-      if (!q) {
-        renderSongsTable(currentSongsList);
-        return;
-      }
+      if (!q) { renderSongsTable(currentSongsList); return; }
       const filtered = currentSongsList.filter(s =>
-        (s.title && s.title.toLowerCase().includes(q)) ||
-        (s.id && s.id.toLowerCase().includes(q)) ||
+        (s.title    && s.title.toLowerCase().includes(q)) ||
+        (s.id       && s.id.toLowerCase().includes(q)) ||
         (s.category && s.category.toLowerCase().includes(q))
       );
       renderSongsTable(filtered);
     });
   }
 
-  // Mở Form Thêm Mới
   const addSongBtn = document.getElementById('add-song-btn');
   if (addSongBtn) {
     addSongBtn.addEventListener('click', () => {
-      const form = document.getElementById('song-form');
-      if (form) form.reset();
-      document.getElementById('form-song-id').value = '';
-      document.getElementById('modal-form-title').textContent = 'Thêm Bài Hát Mới';
-      document.getElementById('save-btn-text').textContent = 'Thêm Bài Hát';
-      document.getElementById('form-isFree').checked = false;
-      document.getElementById('form-hasDemo').checked = true;
-      document.getElementById('form-category').value = 'Nhạc Việt';
-      document.getElementById('form-level').value = '4/10';
-      document.getElementById('form-levelNum').value = 4;
-      document.getElementById('form-price').value = 239000;
-      document.getElementById('form-priceFormatted').value = '239.000đ';
-      document.getElementById('form-discountNote').value = '';
-      document.getElementById('form-tuning').value = 'Standard';
-      document.getElementById('form-duration').value = '03:30';
-      document.getElementById('form-capo').value = 'Không kẹp';
-      document.getElementById('form-tempo').value = '~95 BPM';
-      document.getElementById('form-description').value = '';
-      document.getElementById('form-videoDemo').value = '';
-      document.getElementById('form-targetUrl').value = '';
-      document.getElementById('form-buttonType').value = 'buy';
-      document.getElementById('form-buttonText').value = 'Mua Video Tab';
-      document.getElementById('form-thumbnailBg').value = 'from-[#C1602F] to-[#6E3B1F]';
+      resetFormForNew();
+      document.getElementById('modal-form-title').textContent = 'Them Bai Hat Moi';
+      document.getElementById('save-btn-text').textContent    = 'Them Bai Hat';
       toggleSongModal(true);
     });
   }
 
-  // Đóng Modal
   const closeModalBtn = document.getElementById('close-modal-btn');
   const cancelFormBtn = document.getElementById('cancel-form-btn');
-  const modal = document.getElementById('song-form-modal');
+  const modal         = document.getElementById('song-form-modal');
   if (closeModalBtn) closeModalBtn.addEventListener('click', () => toggleSongModal(false));
   if (cancelFormBtn) cancelFormBtn.addEventListener('click', () => toggleSongModal(false));
   if (modal) {
@@ -253,28 +344,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Tự động điều chỉnh khi tick "Miễn phí"
-  const isFreeCheck = document.getElementById('form-isFree');
-  if (isFreeCheck) {
-    isFreeCheck.addEventListener('change', (e) => {
-      const isFree = e.target.checked;
-      const priceFormattedInput = document.getElementById('form-priceFormatted');
-      const buttonTypeSelect = document.getElementById('form-buttonType');
-      const buttonTextInput = document.getElementById('form-buttonText');
+  const toggleFreeBtn = document.getElementById('toggle-free-btn');
+  const togglePaidBtn = document.getElementById('toggle-paid-btn');
+  if (toggleFreeBtn) toggleFreeBtn.addEventListener('click', () => setTabType(true));
+  if (togglePaidBtn) togglePaidBtn.addEventListener('click', () => setTabType(false));
 
-      if (isFree) {
-        if (priceFormattedInput) priceFormattedInput.value = 'Miễn phí';
-        if (buttonTypeSelect) buttonTypeSelect.value = 'link';
-        if (buttonTextInput) buttonTextInput.value = 'Tải video tab (Miễn phí)';
-      } else {
-        if (priceFormattedInput) priceFormattedInput.value = '239.000đ';
-        if (buttonTypeSelect) buttonTypeSelect.value = 'buy';
-        if (buttonTextInput) buttonTextInput.value = 'Mua Video Tab';
-      }
-    });
-  }
+  setupUploadButton('upload-demo-btn', 'upload-demo-file', 'form-videoDemo',
+    'upload-demo-progress', 'upload-demo-progress-text', 'upload-demo-bar', 'videos');
+  setupUploadButton('upload-tab-btn', 'upload-tab-file', 'form-targetUrl',
+    'upload-tab-progress', 'upload-tab-progress-text', 'upload-tab-bar', 'videos');
 
-  // Submit Form (Create / Update)
   const songForm = document.getElementById('song-form');
   if (songForm) {
     songForm.addEventListener('submit', async (e) => {
@@ -282,40 +361,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const songId = document.getElementById('form-song-id').value;
       const isEdit = Boolean(songId);
+      const title  = document.getElementById('form-title').value.trim();
 
-      const title = document.getElementById('form-title').value.trim();
       if (!title) {
-        alert('Vui lòng nhập tên bài hát nhé!');
+        alert('Vui long nhap ten bai hat nhe!');
         return;
       }
 
+      const isFree = document.getElementById('form-isFree').value === 'true';
+
+      const autoFields = isFree
+        ? {
+            isFree: true,
+            price: 0,
+            priceFormatted: '0d',
+            discountNote: '',
+            buttonType: FREE_DEFAULTS.buttonType,
+            buttonText: FREE_DEFAULTS.buttonText,
+            thumbnailBg: FREE_DEFAULTS.thumbnailBg,
+          }
+        : {
+            isFree: false,
+            targetUrl: '',
+            buttonType: PAID_DEFAULTS.buttonType,
+            buttonText: PAID_DEFAULTS.buttonText,
+            thumbnailBg: PAID_DEFAULTS.thumbnailBg,
+          };
+
+      const priceVal          = isFree ? 0 : (Number(document.getElementById('form-price').value) || 239000);
+      const priceFormattedVal = isFree ? '0d' : (document.getElementById('form-priceFormatted').value.trim() || '239.000d');
+      const discountNoteVal   = isFree ? '' : (document.getElementById('form-discountNote').value.trim());
+      const targetUrlVal      = isFree ? (document.getElementById('form-targetUrl').value.trim()) : '';
+
       const songData = {
         title,
-        category: document.getElementById('form-category').value.trim() || 'Nhạc Việt',
-        level: document.getElementById('form-level').value.trim() || '4/10',
-        levelNum: Number(document.getElementById('form-levelNum').value) || 4,
-        isFree: document.getElementById('form-isFree').checked,
-        price: Number(document.getElementById('form-price').value) || 0,
-        priceFormatted: document.getElementById('form-priceFormatted').value.trim() || 'Miễn phí',
-        discountNote: document.getElementById('form-discountNote').value.trim(),
-        tuning: document.getElementById('form-tuning').value.trim() || 'Standard',
-        duration: document.getElementById('form-duration').value.trim() || '03:30',
-        capo: document.getElementById('form-capo').value.trim() || 'Không kẹp',
-        tempo: document.getElementById('form-tempo').value.trim() || '~95 BPM',
-        description: document.getElementById('form-description').value.trim(),
-        hasDemo: document.getElementById('form-hasDemo').checked,
-        videoDemo: document.getElementById('form-videoDemo').value.trim(),
-        targetUrl: document.getElementById('form-targetUrl').value.trim(),
-        buttonType: document.getElementById('form-buttonType').value,
-        buttonText: document.getElementById('form-buttonText').value.trim() || 'Mua Video Tab',
-        thumbnailBg: document.getElementById('form-thumbnailBg').value
+        category:       document.getElementById('form-category').value.trim() || 'Nhac Viet',
+        level:          document.getElementById('form-level').value.trim() || '4/10',
+        levelNum:       Number(document.getElementById('form-levelNum').value) || 4,
+        tuning:         document.getElementById('form-tuning').value.trim() || 'Standard',
+        duration:       document.getElementById('form-duration').value.trim() || '03:30',
+        capo:           document.getElementById('form-capo').value.trim() || 'Khong kep',
+        tempo:          document.getElementById('form-tempo').value.trim() || '~95 BPM',
+        description:    document.getElementById('form-description').value.trim(),
+        hasDemo:        document.getElementById('form-hasDemo').checked,
+        videoDemo:      document.getElementById('form-videoDemo').value.trim(),
+        price:          priceVal,
+        priceFormatted: priceFormattedVal,
+        discountNote:   discountNoteVal,
+        targetUrl:      targetUrlVal,
+        ...autoFields,
       };
 
-      const saveBtn = document.getElementById('save-song-btn');
+      const saveBtn     = document.getElementById('save-song-btn');
       const saveBtnText = document.getElementById('save-btn-text');
       const saveSpinner = document.getElementById('save-spinner');
 
-      if (saveBtn) saveBtn.disabled = true;
+      if (saveBtn)     saveBtn.disabled = true;
       if (saveBtnText) saveBtnText.classList.add('hidden');
       if (saveSpinner) saveSpinner.classList.remove('hidden');
 
@@ -326,16 +427,19 @@ document.addEventListener('DOMContentLoaded', () => {
         res = await createSong(songData);
       }
 
-      if (saveBtn) saveBtn.disabled = false;
+      if (saveBtn)     saveBtn.disabled = false;
       if (saveBtnText) saveBtnText.classList.remove('hidden');
       if (saveSpinner) saveSpinner.classList.add('hidden');
 
       if (res.success) {
         toggleSongModal(false);
-        showAdminToast(isEdit ? 'Đã cập nhật bài hát thành công!' : `Đã thêm bài hát "${title}" thành công!`);
+        showAdminToast(isEdit
+          ? 'Da cap nhat bai hat "' + title + '" thanh cong!'
+          : 'Da them bai hat "' + title + '" thanh cong!'
+        );
         await loadSongs();
       } else {
-        showAdminToast(res.error || 'Có lỗi xảy ra, vui lòng thử lại.', false);
+        showAdminToast(res.error || 'Co loi xay ra, vui long thu lai.', false);
       }
     });
   }

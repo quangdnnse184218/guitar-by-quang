@@ -10,7 +10,7 @@
  * Schema field: giữ nguyên 100% tên field so với tabsData cũ.
  */
 
-import { db } from './firebase-config.js';
+import { db, storage } from './firebase-config.js';
 import {
   collection,
   getDocs,
@@ -22,6 +22,11 @@ import {
   orderBy,
   query
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import {
+  ref as storageRef,
+  uploadBytesResumable,
+  getDownloadURL
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
 // Tên collection trên Firestore
 const SONGS_COLLECTION = 'songs';
@@ -205,3 +210,52 @@ export async function deleteSong(id) {
     return { success: false, error: 'Không thể xóa bài hát. Vui lòng thử lại.' };
   }
 }
+
+/**
+ * Upload file media (video/ảnh) lên Firebase Storage.
+ * @param {File} file - File object từ <input type="file">
+ * @param {string} folder - Thư mục lưu trữ ('videos' | 'images')
+ * @param {Function} onProgress - Callback(percent: number) cập nhật tiến trình (0-100)
+ * @returns {Promise<{success: boolean, url?: string, error?: string}>}
+ */
+export function uploadMediaFile(file, folder = 'videos', onProgress) {
+  return new Promise((resolve) => {
+    try {
+      if (!file) {
+        resolve({ success: false, error: 'Không có file để upload.' });
+        return;
+      }
+
+      // Tạo tên file duy nhất: timestamp_originalname
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const filePath = `${folder}/${Date.now()}_${safeName}`;
+      const fileRef = storageRef(storage, filePath);
+
+      const uploadTask = uploadBytesResumable(fileRef, file);
+
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          if (typeof onProgress === 'function') onProgress(percent);
+        },
+        (error) => {
+          console.error('[GuitarByQuang] Lỗi upload Storage:', error);
+          resolve({ success: false, error: 'Upload thất bại: ' + error.message });
+        },
+        async () => {
+          try {
+            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            resolve({ success: true, url: downloadUrl });
+          } catch (err) {
+            resolve({ success: false, error: 'Không lấy được URL sau upload.' });
+          }
+        }
+      );
+    } catch (error) {
+      console.error('[GuitarByQuang] Lỗi khởi tạo upload:', error);
+      resolve({ success: false, error: 'Không thể khởi động upload.' });
+    }
+  });
+}
+

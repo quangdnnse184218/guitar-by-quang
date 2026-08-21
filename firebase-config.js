@@ -11,6 +11,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getStorage } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js';
 
 // ============================================================
@@ -34,6 +35,9 @@ export const db = getFirestore(app);
 
 // Khởi tạo Firebase Authentication — instance chính dùng cho Admin Auth
 export const auth = getAuth(app);
+
+// Khởi tạo Firebase Storage — dùng để upload video/ảnh từ Admin
+export const storage = getStorage(app);
 
 // Analytics (optional — chỉ chạy trên browser thật, không chạy khi localhost)
 try {
