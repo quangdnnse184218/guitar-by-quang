@@ -3,11 +3,17 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Collection `songs`: Khách được phép đọc toàn bộ dữ liệu công khai,
     // nhưng CHỈ tài khoản Admin đã đăng nhập mới được phép Thêm / Sửa / Xóa.
-    // Vì hệ thống chỉ có đúng 1 tài khoản Auth của Admin, request.auth != null
-    // là đủ để phân quyền an toàn giữa Admin và khách xem.
     match /songs/{songId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Collection `gears` (Bộ Đồ Nghề): Cùng quy tắc với songs.
+    // Khách xem tự do, chỉ Admin đăng nhập mới được thêm / sửa / xóa.
+    match /gears/{gearId} {
       allow read: if true;
       allow write: if request.auth != null;
     }
   }
 }
+

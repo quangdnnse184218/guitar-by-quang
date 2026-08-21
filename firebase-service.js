@@ -354,6 +354,22 @@ export async function fetchGearById(id) {
 }
 
 /**
+ * Kiểm tra xem ID đồ nghề đã tồn tại trong collection gears chưa
+ * @param {string} id
+ * @returns {Promise<boolean>}
+ */
+async function checkGearIdExists(id) {
+  try {
+    const docRef = doc(db, GEARS_COLLECTION, id);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists();
+  } catch (error) {
+    console.error(`[GuitarByQuang] Lỗi kiểm tra tồn tại gear id="${id}":`, error);
+    return false;
+  }
+}
+
+/**
  * Thêm món đồ nghề mới
  * @param {Object} gearData
  * @returns {Promise<{success: boolean, id?: string, error?: string}>}
@@ -368,7 +384,7 @@ export async function createGear(gearData) {
     let targetId = `gear-${baseSlug}`;
     let counter = 2;
 
-    while (await checkSongIdExists(targetId)) {
+    while (await checkGearIdExists(targetId)) {
       targetId = `gear-${baseSlug}-${counter}`;
       counter++;
     }
