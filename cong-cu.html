@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Công Cụ Hỗ Trợ Tập Đàn Guitar - Guitar By Quang</title>
+  <meta name="description" content="Bộ công cụ hỗ trợ tập guitar fingerstyle của Nhật Quang: Metronome online, Lên Dây Đàn, Vòng Hợp Âm — miễn phí, không cần cài đặt." />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Công Cụ Hỗ Trợ Tập Đàn - Guitar By Quang" />
+  <meta property="og:description" content="Metronome online và các công cụ hỗ trợ tập guitar fingerstyle." />
+  <meta property="og:image" content="assets/avatar.jpg" />
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎸</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Script thường (KHÔNG phải module) — Tailwind cần config đồng bộ trước khi scan class -->
+  <script src="assets/theme-config.js"></script>
+  <link rel="stylesheet" href="assets/theme.css">
+</head>
+<body class="bg-grain min-h-screen flex flex-col selection:bg-terracotta-light selection:text-terracotta">
+
+  <!-- NAVIGATION BAR -->
+  <header id="navbar" class="sticky top-0 z-40 transition-all duration-300 bg-[#E4D3BF]/95 backdrop-blur-md border-b border-[#D4BFAB] shadow-sm">
+    <div class="navbar-inner max-w-7xl mx-auto px-4 sm:px-8 md:px-12 h-20 flex items-center justify-between flex-nowrap gap-2">
+
+      <a href="index.html" class="group flex items-center gap-2.5 sm:gap-3.5 flex-shrink-0">
+        <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-terracotta/80 shadow-sm flex-shrink-0 bg-stone-300 group-hover:scale-105 transition-transform duration-200">
+          <img src="assets/avatar.jpg" alt="Guitar By Quang" class="w-full h-full object-cover object-center" />
+        </div>
+        <div class="flex flex-col">
+          <span class="text-lg sm:text-2xl font-extrabold tracking-tight text-charcoal group-hover:text-terracotta transition-colors duration-200 leading-tight">Guitar By Quang</span>
+          <span class="text-[11px] font-semibold text-charcoal-muted hidden sm:inline-block tracking-wide">fingerstyle diary • Nhật Quang</span>
+        </div>
+      </a>
+
+      <nav id="desktop-nav" class="hidden md:flex items-center space-x-6 lg:space-x-8 text-sm font-bold text-charcoal-muted flex-nowrap whitespace-nowrap">
+        <a href="index.html#about" class="nav-tab-link hover:text-charcoal py-1">Giới thiệu</a>
+        <a href="kho-tab.html" class="nav-tab-link hover:text-charcoal py-1">Kho Video Tab</a>
+        <a href="cong-cu.html" class="nav-tab-link active hover:text-charcoal py-1">Công Cụ</a>
+        <a href="index.html#faq" class="nav-tab-link hover:text-charcoal py-1">Hỏi đáp</a>
+        <a href="index.html#contact" class="nav-tab-link hover:text-charcoal py-1">Liên hệ</a>
+      </nav>
+
+      <!-- Mobile: Badge tĩnh "Công Cụ" -->
+      <div class="md:hidden flex items-center justify-center flex-1 mx-1 overflow-hidden">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surfaceCard/95 border border-[#D4BFAB] text-xs font-extrabold text-terracotta shadow-xs max-w-full">
+          <span class="w-1.5 h-1.5 rounded-full bg-terracotta flex-shrink-0"></span>
+          <span class="truncate">Công Cụ</span>
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <a href="https://www.tiktok.com/@quangdnn104" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-surfaceCard text-charcoal hover:bg-terracotta hover:text-white border border-charcoal-border/80 transition-all shadow-sm">
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
+          <span>TikTok @quangdnn104</span>
+        </a>
+        <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-charcoal hover:bg-surface/80 transition-colors cursor-pointer" aria-label="Mở menu" aria-expanded="false" aria-controls="mobile-menu">
+          <svg id="menu-icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" /></svg>
+          <svg id="menu-icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden md:hidden bg-[#E4D3BF] border-b border-[#D4BFAB] px-6 py-5">
+      <div class="flex flex-col space-y-3 text-base font-bold text-charcoal">
+        <a href="index.html" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">← Về Trang Chủ</a>
+        <a href="index.html#about" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">Giới thiệu</a>
+        <a href="kho-tab.html" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">Kho Video Tab Guitar</a>
+        <a href="cong-cu.html" class="mobile-nav-link py-2 border-b border-charcoal-border/40 text-terracotta font-extrabold">Công Cụ Tập Đàn ✓</a>
+        <a href="index.html#faq" class="mobile-nav-link py-2 border-b border-charcoal-border/40 hover:text-terracotta">Hỏi đáp</a>
+        <a href="index.html#contact" class="mobile-nav-link py-2 hover:text-terracotta">Liên hệ (TikTok, Zalo, Facebook)</a>
+      </div>
+    </div>
+  </header>
+
+
+  <main class="flex-grow">
+    <section class="py-16 sm:py-20 relative overflow-hidden">
+
+      <!-- Họa tiết trang trí -->
+      <div class="music-motif motif-fade-faint staff-lines absolute inset-x-0 top-0 h-20" aria-hidden="true"></div>
+      <svg class="music-motif motif-fade-terracotta absolute -top-4 right-4 sm:right-10 w-24 h-24 sm:w-32 sm:h-32" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+        <path d="M52 8c-7 0-12 6-12 13 0 5 3 9 7 13-6 6-12 12-12 21 0 10 8 17 18 17 9 0 16-7 16-16 0-8-6-14-13-16v-19c4 3 7 7 7 12 0 3-1 5-3 7l3 3c3-3 5-7 5-11 0-8-5-14-12-17V13c0-3 2-5 4-5s4 2 4 5c0 2-1 3-2 4l3 3c2-2 3-5 3-7 0-6-5-11-11-11Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+        <circle cx="49" cy="66" r="9" stroke="currentColor" stroke-width="2.2"/>
+      </svg>
+      <svg class="music-motif motif-fade-sage motif-float absolute top-20 left-4 sm:left-10 w-8 h-8" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M9 18V5l10-2v11.5M9 18a3 3 0 11-6 0 3 3 0 016 0zm10-3.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+
+      <div class="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 md:px-12">
+
+        <!-- Breadcrumb + Header -->
+        <div class="mb-12 space-y-3 reveal">
+          <nav class="flex items-center gap-2 text-xs text-charcoal-muted font-semibold" aria-label="Breadcrumb">
+            <a href="index.html" class="hover:text-terracotta transition-colors">Trang chủ</a>
+            <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="text-terracotta font-bold">Công Cụ</span>
+          </nav>
+          <div class="space-y-2 max-w-2xl">
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-terracotta">Dụng cụ miễn phí</span>
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl text-charcoal font-extrabold leading-tight">
+              Công Cụ Tập Đàn 🎛️
+            </h1>
+            <p class="text-charcoal-muted text-sm sm:text-base font-medium leading-relaxed pt-1">
+              Mình tự làm mấy công cụ nhỏ này để tập đàn cho chuẩn nhịp và chuẩn dây — anh em dùng miễn phí, không cần cài gì cả!
+            </p>
+          </div>
+        </div>
+
+        <!-- Tool Grid: 3 cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-7">
+
+          <!-- Card 1: METRONOME (hoạt động) -->
+          <a href="metronome.html" class="group relative reveal p-6 sm:p-7 rounded-3xl bg-surfaceCard border border-charcoal-border/80 shadow-soft hover:border-terracotta-border hover:shadow-float hover:-translate-y-1.5 transition-all duration-300 ease-out flex flex-col gap-5">
+            <!-- Label hoạt động -->
+            <span class="absolute top-4 right-4 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold tracking-wide uppercase">Hoạt động</span>
+
+            <div class="w-14 h-14 rounded-2xl bg-terracotta-light text-terracotta flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-300">
+              🥁
+            </div>
+            <div class="flex-grow space-y-2">
+              <h2 class="text-xl font-extrabold text-charcoal group-hover:text-terracotta transition-colors">Metronome</h2>
+              <p class="text-sm text-charcoal-muted font-medium leading-relaxed">
+                Máy đếm nhịp online dùng Web Audio API — chính xác, không bị trôi nhịp. Có Tap Tempo và flash visual theo phách.
+              </p>
+            </div>
+            <div class="inline-flex items-center gap-2 text-sm font-bold text-terracotta group-hover:gap-3 transition-all">
+              <span>Mở công cụ</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </div>
+          </a>
+
+          <!-- Card 2: TUNER (sắp ra mắt) -->
+          <div class="relative reveal p-6 sm:p-7 rounded-3xl bg-surfaceCard/60 border border-charcoal-border/50 opacity-60 flex flex-col gap-5 cursor-not-allowed" aria-disabled="true">
+            <span class="absolute top-4 right-4 px-2.5 py-0.5 rounded-full bg-charcoal-border/40 text-charcoal-muted text-[10px] font-extrabold tracking-wide uppercase">Sắp ra mắt</span>
+
+            <div class="w-14 h-14 rounded-2xl bg-surface text-charcoal-faint flex items-center justify-center text-3xl shadow-inner">
+              🎵
+            </div>
+            <div class="flex-grow space-y-2">
+              <h2 class="text-xl font-extrabold text-charcoal-muted">Lên Dây Đàn (Tuner)</h2>
+              <p class="text-sm text-charcoal-faint font-medium leading-relaxed">
+                Lên dây chính xác bằng microphone — nhận biết tần số thật của dây đàn và chỉ hướng chỉnh tới khi đúng chuẩn.
+              </p>
+            </div>
+            <span class="text-sm font-bold text-charcoal-faint">Đang phát triển...</span>
+          </div>
+
+          <!-- Card 3: CHORD WHEEL (sắp ra mắt) -->
+          <div class="relative reveal p-6 sm:p-7 rounded-3xl bg-surfaceCard/60 border border-charcoal-border/50 opacity-60 flex flex-col gap-5 cursor-not-allowed" aria-disabled="true">
+            <span class="absolute top-4 right-4 px-2.5 py-0.5 rounded-full bg-charcoal-border/40 text-charcoal-muted text-[10px] font-extrabold tracking-wide uppercase">Sắp ra mắt</span>
+
+            <div class="w-14 h-14 rounded-2xl bg-surface text-charcoal-faint flex items-center justify-center text-3xl shadow-inner">
+              🎸
+            </div>
+            <div class="flex-grow space-y-2">
+              <h2 class="text-xl font-extrabold text-charcoal-muted">Vòng Hợp Âm</h2>
+              <p class="text-sm text-charcoal-faint font-medium leading-relaxed">
+                Tra hợp âm nhanh theo giọng và tìm vòng chord phổ biến cho bài hát fingerstyle — tất cả trong 1 vòng tròn trực quan.
+              </p>
+            </div>
+            <span class="text-sm font-bold text-charcoal-faint">Đang phát triển...</span>
+          </div>
+
+        </div>
+
+        <!-- Bottom note -->
+        <p class="mt-10 text-center text-xs text-charcoal-faint font-semibold reveal">
+          💡 Tất cả công cụ chạy trên trình duyệt, không cần cài app — anh em cứ bookmark lại dùng dần nhé!
+        </p>
+
+      </div>
+    </section>
+  </main>
+
+
+  <!-- FOOTER -->
+  <footer class="py-10 bg-canvas border-t border-charcoal-border/60 text-center">
+    <div class="max-w-7xl mx-auto px-6 space-y-3">
+      <p class="text-sm sm:text-base font-bold text-charcoal max-w-2xl mx-auto leading-relaxed">
+        Chúc anh em tập đàn vui vẻ và sớm đánh trọn vẹn bài hát mình thích! 🎸
+      </p>
+      <p class="text-xs text-charcoal-muted font-medium">© 2026 Guitar By Quang (Nhật Quang).</p>
+      <div class="flex justify-center flex-wrap gap-x-6 gap-y-1 text-xs text-charcoal-muted font-semibold pt-1">
+        <a href="index.html#about" class="hover:text-terracotta transition-colors">Giới thiệu</a>
+        <span>•</span>
+        <a href="kho-tab.html" class="hover:text-terracotta transition-colors">Kho Video Tab</a>
+        <span>•</span>
+        <a href="cong-cu.html" class="text-terracotta font-bold">Công Cụ</a>
+        <span>•</span>
+        <a href="index.html#faq" class="hover:text-terracotta transition-colors">Hỏi đáp</a>
+        <span>•</span>
+        <a href="https://www.tiktok.com/@quangdnn104" target="_blank" rel="noopener noreferrer" class="hover:text-terracotta transition-colors">TikTok</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JS: chỉ cần common.js (shared helpers) và cong-cu.js -->
+  <script type="module" src="common.js"></script>
+  <script type="module" src="cong-cu.js"></script>
+
+</body>
+</html>

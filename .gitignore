@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Firebase Service Account Credentials & Secrets
+scripts/serviceAccountKey.json
+*serviceAccountKey*.json
+*.key
+*.pem
+
+# Logs & Temporary Files
+*.log
+npm-debug.log*
+
+# OS Files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metronome - Máy Đếm Nhịp Online | Guitar By Quang</title>
+  <meta name="description" content="Metronome online chính xác cho guitar fingerstyle — chỉnh BPM, chọn nhịp 4/4 3/4 6/8 2/4, Tap Tempo, flash visual phách xanh lá. Dùng Web Audio API, miễn phí." />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Metronome Online | Guitar By Quang" />
+  <meta property="og:description" content="Máy đếm nhịp online chính xác dùng Web Audio API — không bị trôi nhịp, có Tap Tempo và chọn nhịp." />
+  <meta property="og:image" content="assets/avatar.jpg" />
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥁</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Script thường (KHÔNG phải module) — Tailwind cần config đồng bộ trước khi scan class -->
+  <script src="assets/theme-config.js"></script>
+  <link rel="stylesheet" href="assets/theme.css">
+  <!-- Theme riêng cho trang Metronome (Dark studio theme & Green lights) -->
+  <link rel="stylesheet" href="assets/metronome-theme.css">
+</head>
+<body class="metronome-page min-h-screen flex flex-col selection:bg-emerald-800 selection:text-emerald-200">
+
+  <!-- NAVIGATION BAR -->
+  <header id="navbar" class="sticky top-0 z-40 transition-all duration-300 bg-[#2D241D]/95 backdrop-blur-md border-b border-charcoal-muted/30 shadow-sm">
+    <div class="navbar-inner max-w-7xl mx-auto px-4 sm:px-8 md:px-12 h-16 sm:h-20 flex items-center justify-between flex-nowrap gap-2">
+
+      <a href="index.html" class="group flex items-center gap-2.5 sm:gap-3.5 flex-shrink-0">
+        <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-terracotta/80 shadow-sm flex-shrink-0 bg-stone-700 group-hover:scale-105 transition-transform duration-200">
+          <img src="assets/avatar.jpg" alt="Guitar By Quang" class="w-full h-full object-cover object-center" />
+        </div>
+        <div class="flex flex-col">
+          <span class="text-base sm:text-2xl font-extrabold tracking-tight text-[#F5EBE1] group-hover:text-terracotta transition-colors duration-200 leading-tight">Guitar By Quang</span>
+          <span class="text-[10px] sm:text-[11px] font-semibold text-canvas/60 hidden sm:inline-block tracking-wide">fingerstyle diary • Nhật Quang</span>
+        </div>
+      </a>
+
+      <nav id="desktop-nav" class="hidden md:flex items-center space-x-6 lg:space-x-8 text-sm font-bold text-canvas/70 flex-nowrap whitespace-nowrap">
+        <a href="index.html#about" class="nav-tab-link hover:text-white py-1">Giới thiệu</a>
+        <a href="kho-tab.html" class="nav-tab-link hover:text-white py-1">Kho Video Tab</a>
+        <a href="cong-cu.html" class="nav-tab-link active hover:text-white py-1">Công Cụ</a>
+        <a href="index.html#faq" class="nav-tab-link hover:text-white py-1">Hỏi đáp</a>
+        <a href="index.html#contact" class="nav-tab-link hover:text-white py-1">Liên hệ</a>
+      </nav>
+
+      <!-- Mobile: breadcrumb nhỏ -->
+      <div class="md:hidden flex items-center justify-center flex-1 mx-1 overflow-hidden">
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/40 border border-white/10 text-xs font-extrabold text-emerald-400 shadow-xs max-w-full">
+          <a href="cong-cu.html" class="text-canvas/60 hover:text-emerald-300 transition-colors truncate">Công Cụ</a>
+          <svg class="w-2.5 h-2.5 text-canvas/40 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <span class="truncate">Metronome</span>
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <a href="https://www.tiktok.com/@quangdnn104" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-white/10 text-canvas hover:bg-terracotta hover:text-white border border-white/15 transition-all shadow-sm">
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
+          <span>TikTok</span>
+        </a>
+        <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-canvas hover:bg-white/10 transition-colors cursor-pointer" aria-label="Mở menu" aria-expanded="false" aria-controls="mobile-menu">
+          <svg id="menu-icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" /></svg>
+          <svg id="menu-icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden md:hidden bg-[#2D241D] border-b border-charcoal-muted/30 px-6 py-5">
+      <div class="flex flex-col space-y-3 text-base font-bold text-canvas">
+        <a href="index.html" class="mobile-nav-link py-2 border-b border-white/10 hover:text-terracotta">← Về Trang Chủ</a>
+        <a href="index.html#about" class="mobile-nav-link py-2 border-b border-white/10 hover:text-terracotta">Giới thiệu</a>
+        <a href="kho-tab.html" class="mobile-nav-link py-2 border-b border-white/10 hover:text-terracotta">Kho Video Tab Guitar</a>
+        <a href="cong-cu.html" class="mobile-nav-link py-2 border-b border-white/10 hover:text-terracotta">Công Cụ Tập Đàn</a>
+        <a href="index.html#faq" class="mobile-nav-link py-2 border-b border-white/10 hover:text-terracotta">Hỏi đáp</a>
+        <a href="index.html#contact" class="mobile-nav-link py-2 hover:text-terracotta">Liên hệ (TikTok, Zalo, Facebook)</a>
+      </div>
+    </div>
+  </header>
+
+
+  <main class="flex-grow flex flex-col justify-center items-center px-4 py-4 sm:py-6">
+
+    <!-- Cảnh báo nếu không hỗ trợ Web Audio API -->
+    <div id="web-audio-unsupported" class="hidden max-w-2xl mx-auto mb-4 px-6 py-4 rounded-2xl bg-amber-900/40 border-l-4 border-amber-400 text-amber-200 text-sm font-semibold leading-relaxed">
+      🎸 Trình duyệt của bạn chưa hỗ trợ Web Audio API, thử cập nhật hoặc đổi trình duyệt khác giúp mình nhé!
+    </div>
+
+    <!-- ================================================== -->
+    <!-- METRONOME CONTROLS — Above-The-Fold Compact Hub    -->
+    <!-- ================================================== -->
+    <section id="metronome-controls" class="w-full max-w-xl">
+      <div class="metro-card rounded-3xl p-5 sm:p-7 shadow-2xl border border-white/10">
+
+        <!-- Header nhỏ gọn -->
+        <div class="flex items-center justify-between mb-4 border-b border-white/10 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">🥁</span>
+            <h1 class="text-base sm:text-lg font-extrabold text-white tracking-tight">Metronome Online</h1>
+          </div>
+          <span class="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+            Web Audio • Zero Drift
+          </span>
+        </div>
+
+        <!-- ======================================== -->
+        <!-- MAIN HORIZONTAL ROW (3 VÙNG)             -->
+        <!-- [Đèn nhịp] | [BPM Display + / -] | [Nhịp]-->
+        <!-- ======================================== -->
+        <div class="grid grid-cols-12 gap-3 sm:gap-4 items-center justify-between mb-5">
+
+          <!-- Vùng Trái: Cụm Đèn Báo Nhịp (col-span-3) -->
+          <div class="col-span-3 flex flex-col items-center justify-center gap-2.5">
+            <!-- Đèn to phách 1 (thu nhỏ ~2/3: w-14 h-14 sm:w-16 sm:h-16) -->
+            <div
+              id="beat-flash"
+              class="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center cursor-default shadow-inner"
+              aria-hidden="true">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400/40"></span>
+            </div>
+
+            <!-- Cụm chấm đèn nhỏ theo nhịp -->
+            <div id="beat-dots" class="flex items-center gap-1.5" aria-hidden="true">
+              <!-- Render động bằng JS theo beatsPerBar -->
+            </div>
+            <span class="text-[10px] text-canvas/50 font-bold uppercase tracking-wider">Phách</span>
+          </div>
+
+          <!-- Vùng Giữa: BPM Lớn + Nút Tăng Giảm (col-span-6) -->
+          <div class="col-span-6 flex items-center justify-center gap-2 sm:gap-3">
+            <button
+              id="bpm-minus"
+              class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xl font-black transition-all active:scale-90 cursor-pointer select-none flex items-center justify-center"
+              aria-label="Giảm 1 BPM">
+              −
+            </button>
+
+            <div class="text-center min-w-[90px] sm:min-w-[120px]">
+              <div
+                id="bpm-display"
+                class="text-5xl sm:text-7xl font-black text-white tabular-nums leading-none select-none tracking-tight"
+                aria-live="polite"
+                aria-atomic="true">
+                100
+              </div>
+              <span class="text-[10px] sm:text-xs font-extrabold text-emerald-400 tracking-widest uppercase mt-1 block">BPM</span>
+            </div>
+
+            <button
+              id="bpm-plus"
+              class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xl font-black transition-all active:scale-90 cursor-pointer select-none flex items-center justify-center"
+              aria-label="Tăng 1 BPM">
+              +
+            </button>
+          </div>
+
+          <!-- Vùng Phải: Dropdown Chọn Nhịp (col-span-3) -->
+          <div class="col-span-3 flex flex-col items-center justify-center gap-1">
+            <label for="time-signature-select" class="text-[10px] text-canvas/50 font-bold uppercase tracking-wider">
+              Chọn nhịp
+            </label>
+            <div class="relative w-full max-w-[85px]">
+              <select
+                id="time-signature-select"
+                class="time-sig-select w-full px-2.5 py-2 rounded-xl text-xs font-black text-center cursor-pointer appearance-none">
+                <option value="4/4" selected>4/4</option>
+                <option value="3/4">3/4</option>
+                <option value="6/8">6/8</option>
+                <option value="2/4">2/4</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-canvas/50">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+            <span class="text-[10px] text-canvas/40 font-semibold text-center">Standard</span>
+          </div>
+
+        </div>
+
+        <!-- ======================================== -->
+        <!-- BPM SLIDER (Gọn gàng)                    -->
+        <!-- ======================================== -->
+        <div class="mb-5 px-1 sm:px-3">
+          <input
+            id="bpm-slider"
+            type="range"
+            min="40"
+            max="208"
+            value="100"
+            step="1"
+            class="w-full h-2 rounded-full appearance-none cursor-pointer accent-emerald-500 bg-white/15"
+            aria-label="Slider chỉnh BPM"
+          />
+          <div class="flex justify-between text-[10px] text-canvas/40 font-bold mt-1 px-1">
+            <span>40 Largo</span>
+            <span>100 Andante</span>
+            <span>160 Presto</span>
+            <span>208</span>
+          </div>
+        </div>
+
+        <!-- ======================================== -->
+        <!-- ACTION BUTTONS: TAP TEMPO + PLAY/PAUSE   -->
+        <!-- Đặt sát cạnh nhau (flex gap-3)           -->
+        <!-- ======================================== -->
+        <div class="flex items-center justify-center gap-3 sm:gap-4 mb-4">
+          <!-- Nút Tap Tempo -->
+          <button
+            id="tap-btn"
+            class="flex-1 max-w-[160px] py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-canvas font-extrabold text-xs sm:text-sm border border-white/15 transition-all active:scale-95 cursor-pointer shadow-md flex items-center justify-center gap-2"
+            aria-label="Tap Tempo">
+            <span>🎵</span>
+            <span>Tap Tempo</span>
+          </button>
+
+          <!-- Nút Play / Pause -->
+          <button
+            id="play-btn"
+            class="flex-1 max-w-[180px] py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-charcoal font-black text-xs sm:text-sm border border-emerald-300 transition-all active:scale-95 cursor-pointer shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+            aria-label="Bắt đầu metronome">
+            <svg id="play-icon" class="w-4 h-4 text-charcoal fill-current" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <svg id="pause-icon" class="w-4 h-4 text-white fill-current hidden" viewBox="0 0 24 24">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+            <span id="play-label" class="text-charcoal font-extrabold">Bắt đầu</span>
+          </button>
+        </div>
+
+        <!-- Phím tắt bàn phím (Compact) -->
+        <div class="text-center pt-2 border-t border-white/10 flex justify-center items-center gap-4 text-[11px] text-canvas/50 font-semibold flex-wrap">
+          <span><kbd class="px-1.5 py-0.5 rounded bg-black/40 border border-white/15 text-[10px] font-mono text-emerald-400">Space</kbd> Play/Pause</span>
+          <span><kbd class="px-1.5 py-0.5 rounded bg-black/40 border border-white/15 text-[10px] font-mono text-emerald-400">T</kbd> Tap</span>
+          <span><kbd class="px-1.5 py-0.5 rounded bg-black/40 border border-white/15 text-[10px] font-mono text-emerald-400">↑ ↓</kbd> ±1 BPM</span>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- FOOTER NHỎ GỌN -->
+  <footer class="py-4 bg-[#1A1410] border-t border-white/10 text-center text-xs text-canvas/50">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span>© 2026 Guitar By Quang • Nhật Quang</span>
+      <div class="flex items-center gap-4">
+        <a href="index.html" class="hover:text-emerald-400 transition-colors">Trang chủ</a>
+        <span>•</span>
+        <a href="kho-tab.html" class="hover:text-emerald-400 transition-colors">Kho Video Tab</a>
+        <span>•</span>
+        <a href="cong-cu.html" class="hover:text-emerald-400 transition-colors">Công Cụ</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JS: common.js + metronome.js -->
+  <script type="module" src="common.js"></script>
+  <script type="module" src="metronome.js"></script>
+
+</body>
+</html>
