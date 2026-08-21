@@ -40,21 +40,32 @@ const SONGS_COLLECTION = 'songs';
  */
 export async function fetchAllSongs() {
   try {
-    // Sắp xếp theo id để giữ đúng thứ tự
-    const q = query(collection(db, SONGS_COLLECTION), orderBy('__name__'));
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(collection(db, SONGS_COLLECTION));
 
     if (snapshot.empty) {
       console.warn('[GuitarByQuang] Firestore: collection "songs" trống hoặc chưa có data.');
       return [];
     }
 
-    return snapshot.docs.map(docSnap => ({
-      // Lấy đúng document ID làm field `id` (tab-1, tab-2, ...)
-      id: docSnap.id,
-      // Spread toàn bộ field của document — giữ nguyên tên field
-      ...docSnap.data()
-    }));
+    const songs = snapshot.docs.map((docSnap, idx) => {
+      const data = docSnap.data();
+      let order = data.order;
+      if (order === undefined || order === null || isNaN(Number(order))) {
+        // Tự trích xuất số từ id như tab-1, tab-10 hoặc dùng index
+        const match = docSnap.id.match(/\d+/);
+        order = match ? parseInt(match[0], 10) : (idx + 1);
+      }
+      return {
+        id: docSnap.id,
+        ...data,
+        order: Number(order)
+      };
+    });
+
+    // Sắp xếp tăng dần theo số thứ tự hiển thị (order)
+    songs.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    return songs;
   } catch (error) {
     console.error('[GuitarByQuang] Lỗi khi fetch danh sách bài hát từ Firestore:', error);
     return [];
@@ -154,6 +165,7 @@ export async function createSong(songData) {
     dataToSave.price = Number(dataToSave.price) || 0;
     dataToSave.isFree = Boolean(dataToSave.isFree);
     dataToSave.hasDemo = Boolean(dataToSave.hasDemo);
+    dataToSave.order = Number(dataToSave.order) || 1;
 
     await setDoc(doc(db, SONGS_COLLECTION, targetId), dataToSave);
     return { success: true, id: targetId };
@@ -182,6 +194,7 @@ export async function updateSong(id, songData) {
     if (dataToSave.price !== undefined) dataToSave.price = Number(dataToSave.price);
     if (dataToSave.isFree !== undefined) dataToSave.isFree = Boolean(dataToSave.isFree);
     if (dataToSave.hasDemo !== undefined) dataToSave.hasDemo = Boolean(dataToSave.hasDemo);
+    if (dataToSave.order !== undefined) dataToSave.order = Number(dataToSave.order);
 
     const docRef = doc(db, SONGS_COLLECTION, id);
     await updateDoc(docRef, dataToSave);
@@ -189,6 +202,52 @@ export async function updateSong(id, songData) {
   } catch (error) {
     console.error(`[GuitarByQuang] Lỗi khi cập nhật bài hát id="${id}":`, error);
     return { success: false, error: 'Không thể cập nhật bài hát. Vui lòng thử lại.' };
+  }
+}
+
+/**
+ * Hoán đổi vị trí thứ tự (order) giữa 2 bài hát
+ * @param {string} songId1 
+ * @param {number} order1 
+ * @param {string} songId2 
+ * @param {number} order2 
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function swapSongsOrder(songId1, order1, songId2, order2) {
+  try {
+    const docRef1 = doc(db, SONGS_COLLECTION, songId1);
+    const docRef2 = doc(db, SONGS_COLLECTION, songId2);
+
+    await updateDoc(docRef1, { order: Number(order2) });
+    await updateDoc(docRef2, { order: Number(order1) });
+
+    return { success: true };
+  } catch (error) {
+    console.error('[GuitarByQuang] Lỗi khi đổi thứ tự bài hát:', error);
+    return { success: false, error: 'Không thể đổi thứ tự bài hát. Vui lòng thử lại.' };
+  }
+}
+
+/**
+ * Hoán đổi vị trí thứ tự (order) giữa 2 món đồ nghề
+ * @param {string} gearId1 
+ * @param {number} order1 
+ * @param {string} gearId2 
+ * @param {number} order2 
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function swapGearsOrder(gearId1, order1, gearId2, order2) {
+  try {
+    const docRef1 = doc(db, GEARS_COLLECTION, gearId1);
+    const docRef2 = doc(db, GEARS_COLLECTION, gearId2);
+
+    await updateDoc(docRef1, { order: Number(order2) });
+    await updateDoc(docRef2, { order: Number(order1) });
+
+    return { success: true };
+  } catch (error) {
+    console.error('[GuitarByQuang] Lỗi khi đổi thứ tự đồ nghề:', error);
+    return { success: false, error: 'Không thể đổi thứ tự đồ nghề. Vui lòng thử lại.' };
   }
 }
 

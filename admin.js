@@ -10,8 +10,8 @@
 
 import { onAuthChange, logoutAdmin } from './firebase-auth-service.js';
 import {
-  fetchAllSongs, createSong, updateSong, deleteSong,
-  fetchAllGears, createGear, updateGear, deleteGear,
+  fetchAllSongs, createSong, updateSong, deleteSong, swapSongsOrder,
+  fetchAllGears, createGear, updateGear, deleteGear, swapGearsOrder,
   DEFAULT_GEARS
 } from './firebase-service.js';
 
@@ -170,8 +170,8 @@ function renderSongsTable(songs) {
   if (!songs || songs.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" class="py-8 text-center text-[#8C827A]">
-          Chua co bai hat nao trong kho. Hay bam "+ Them Bai Hat Moi" de tao nhe!
+        <td colspan="8" class="py-8 text-center text-[#8C827A]">
+          Chưa có bài hát nào trong kho. Hãy bấm "+ Thêm Bài Hát Mới" để tạo nhé!
         </td>
       </tr>
     `;
@@ -182,28 +182,59 @@ function renderSongsTable(songs) {
     const isFree = Boolean(song.isFree);
     const badgeType = isFree
       ? '<span class="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300 text-[10px] font-black uppercase">FREE</span>'
-      : '<span class="px-2.5 py-0.5 rounded-md bg-orange-100 text-orange-900 border border-orange-300 text-[10px] font-black uppercase">BAN</span>';
+      : '<span class="px-2.5 py-0.5 rounded-md bg-orange-100 text-orange-900 border border-orange-300 text-[10px] font-black uppercase">BÁN</span>';
+
+    const isFirst = index === 0;
+    const isLast = index === songs.length - 1;
+    const currentOrder = song.order !== undefined ? song.order : (index + 1);
+
+    // Đánh dấu 3 bài đầu tiên sẽ lên mục Nổi Bật ở trang chủ
+    const isFeatured = index < 3;
+    const featuredTag = isFeatured
+      ? `<span class="inline-flex items-center gap-1 text-[10px] font-bold text-terracotta bg-terracotta/10 px-1.5 py-0.5 rounded border border-terracotta/20 mr-1.5" title="Top 3 bài hiển thị nổi bật ở trang chủ">★ Nổi Bật</span>`
+      : '';
 
     return `
-      <tr class="hover:bg-[#F7F4F0] transition-colors border-b border-[#E3DBD0] group">
+      <tr class="hover:bg-[#F7F4F0] transition-colors border-b border-[#E3DBD0] group ${isFeatured ? 'bg-amber-50/30' : ''}">
         <td class="py-4 px-4 text-center font-mono font-bold text-[#70655B]">${index + 1}</td>
         <td class="py-4 px-4">
-          <div class="font-black text-[#1A1614] text-sm group-hover:text-terracotta transition-colors">${song.title}</div>
+          <div class="font-black text-[#1A1614] text-sm group-hover:text-terracotta transition-colors flex items-center flex-wrap gap-1">
+            ${featuredTag}
+            <span>${song.title}</span>
+          </div>
           <div class="text-[11px] font-mono text-[#8C827A] font-semibold">ID: ${song.id}</div>
         </td>
-        <td class="py-4 px-4 text-[#4A4036] font-bold">${song.category || 'Nhac Viet'}</td>
+        <td class="py-4 px-4 text-[#4A4036] font-bold">${song.category || 'Nhạc Việt'}</td>
         <td class="py-4 px-4">
           <span class="font-black text-terracotta">${song.level || '4/10'}</span>
         </td>
         <td class="py-4 px-4">${badgeType}</td>
-        <td class="py-4 px-4 font-mono font-black text-[#1A1614] text-sm">${isFree ? '0d' : (song.priceFormatted || '239.000d')}</td>
+        <td class="py-4 px-4 font-mono font-black text-[#1A1614] text-sm">${isFree ? '0đ' : (song.priceFormatted || '239.000đ')}</td>
+        
+        <!-- Cột Thứ Tự / Vị Trí với nút Lên / Xuống -->
+        <td class="py-4 px-4 text-center">
+          <div class="inline-flex items-center gap-1.5 bg-[#EAE4DC] px-2 py-1 rounded-xl border border-[#D6CFC4]">
+            <button onclick="handleMoveSong('${song.id}', -1)" ${isFirst ? 'disabled' : ''} 
+              class="w-6 h-6 rounded-lg flex items-center justify-center font-black text-xs transition-colors ${isFirst ? 'text-[#A89F95] cursor-not-allowed opacity-40' : 'bg-white text-charcoal hover:bg-terracotta hover:text-white cursor-pointer shadow-xs'}"
+              title="Đẩy lên trên (tăng độ ưu tiên)">
+              ▲
+            </button>
+            <span class="font-mono font-black text-xs text-charcoal min-w-[20px] text-center">${currentOrder}</span>
+            <button onclick="handleMoveSong('${song.id}', 1)" ${isLast ? 'disabled' : ''} 
+              class="w-6 h-6 rounded-lg flex items-center justify-center font-black text-xs transition-colors ${isLast ? 'text-[#A89F95] cursor-not-allowed opacity-40' : 'bg-white text-charcoal hover:bg-terracotta hover:text-white cursor-pointer shadow-xs'}"
+              title="Đẩy xuống dưới">
+              ▼
+            </button>
+          </div>
+        </td>
+
         <td class="py-4 px-4 text-right">
           <div class="flex items-center justify-end gap-1.5">
             <button onclick="handleEditSong('${song.id}')" class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-extrabold text-xs transition-colors cursor-pointer shadow-xs">
-              Sua
+              Sửa
             </button>
             <button onclick="handleDeleteSong('${song.id}', '${song.title.replace(/'/g, "\\'")}')" class="px-3 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 font-extrabold text-xs transition-colors cursor-pointer shadow-xs">
-              Xoa
+              Xóa
             </button>
           </div>
         </td>
@@ -217,6 +248,31 @@ async function loadSongs() {
   currentSongsList = songs;
   renderSongsTable(songs);
 }
+
+// Di chuyển thứ tự bài hát (Lên / Xuống)
+window.handleMoveSong = async function(songId, direction) {
+  const idx = currentSongsList.findIndex(s => s.id === songId);
+  if (idx === -1) return;
+  const targetIdx = idx + direction;
+  if (targetIdx < 0 || targetIdx >= currentSongsList.length) return;
+
+  const currentSong = currentSongsList[idx];
+  const targetSong  = currentSongsList[targetIdx];
+
+  const currentOrder = currentSong.order !== undefined ? currentSong.order : (idx + 1);
+  const targetOrder  = targetSong.order !== undefined ? targetSong.order : (targetIdx + 1);
+
+  const finalOrder1 = currentOrder === targetOrder ? (targetIdx + 1) : targetOrder;
+  const finalOrder2 = currentOrder === targetOrder ? (idx + 1) : currentOrder;
+
+  const res = await swapSongsOrder(currentSong.id, finalOrder1, targetSong.id, finalOrder2);
+  if (res.success) {
+    showAdminToast(`Đã chuyển vị trí bài "${currentSong.title}"!`);
+    await loadSongs();
+  } else {
+    showAdminToast(res.error || 'Lỗi khi đổi vị trí', false);
+  }
+};
 
 // ============================================================
 // 3. RENDER BANG BO DO NGHE (GEARS)
@@ -242,11 +298,15 @@ function renderGearsTable(gears) {
           <span>${gear.buyText || 'Link Mua'}</span>
           <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
         </a>`
-      : `<span class="text-xs text-[#70655B] italic">${gear.footerText || 'Tu van truc tiep'}</span>`;
+      : `<span class="text-xs text-[#70655B] italic">${gear.footerText || 'Tư vấn trực tiếp'}</span>`;
 
     const imgPreview = gear.image
       ? `<img src="${gear.image}" alt="${gear.title}" class="w-10 h-10 object-contain rounded-xl bg-[#EDE5D8] border border-[#D6CFC4] p-0.5 shadow-xs" onerror="this.src='assets/clover.jpg'" />`
       : `<div class="w-10 h-10 rounded-xl bg-[#EDE5D8] border border-[#D6CFC4] flex items-center justify-center text-base">🎸</div>`;
+
+    const isFirst = index === 0;
+    const isLast = index === gears.length - 1;
+    const currentOrder = gear.order !== undefined ? gear.order : (index + 1);
 
     return `
       <tr class="hover:bg-[#F7F4F0] transition-colors border-b border-[#E3DBD0] group">
@@ -257,17 +317,34 @@ function renderGearsTable(gears) {
           <div class="text-[11px] font-mono text-[#8C827A] font-semibold">ID: ${gear.id}</div>
         </td>
         <td class="py-4 px-4">
-          <span class="px-2.5 py-0.5 rounded-md bg-[#EAE4DC] text-[#3A332C] border border-[#D6CFC4] text-[10px] font-extrabold uppercase">${gear.category || 'THIET BI'}</span>
+          <span class="px-2.5 py-0.5 rounded-md bg-[#EAE4DC] text-[#3A332C] border border-[#D6CFC4] text-[10px] font-extrabold uppercase">${gear.category || 'THIẾT BỊ'}</span>
         </td>
         <td class="py-4 px-4">${buyInfo}</td>
-        <td class="py-4 px-4 text-center font-mono font-black text-terracotta">${gear.order || index + 1}</td>
+        
+        <!-- Cột Thứ Tự / Vị Trí Đồ Nghề với nút Lên / Xuống -->
+        <td class="py-4 px-4 text-center">
+          <div class="inline-flex items-center gap-1.5 bg-[#EAE4DC] px-2 py-1 rounded-xl border border-[#D6CFC4]">
+            <button onclick="handleMoveGear('${gear.id}', -1)" ${isFirst ? 'disabled' : ''} 
+              class="w-6 h-6 rounded-lg flex items-center justify-center font-black text-xs transition-colors ${isFirst ? 'text-[#A89F95] cursor-not-allowed opacity-40' : 'bg-white text-charcoal hover:bg-terracotta hover:text-white cursor-pointer shadow-xs'}"
+              title="Đẩy lên trước">
+              ▲
+            </button>
+            <span class="font-mono font-black text-xs text-charcoal min-w-[20px] text-center">${currentOrder}</span>
+            <button onclick="handleMoveGear('${gear.id}', 1)" ${isLast ? 'disabled' : ''} 
+              class="w-6 h-6 rounded-lg flex items-center justify-center font-black text-xs transition-colors ${isLast ? 'text-[#A89F95] cursor-not-allowed opacity-40' : 'bg-white text-charcoal hover:bg-terracotta hover:text-white cursor-pointer shadow-xs'}"
+              title="Đẩy xuống sau">
+              ▼
+            </button>
+          </div>
+        </td>
+
         <td class="py-4 px-4 text-right">
           <div class="flex items-center justify-end gap-1.5">
             <button onclick="handleEditGear('${gear.id}')" class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-extrabold text-xs transition-colors cursor-pointer shadow-xs">
-              Sua
+              Sửa
             </button>
             <button onclick="handleDeleteGear('${gear.id}', '${gear.title.replace(/'/g, "\\'")}')" class="px-3 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 font-extrabold text-xs transition-colors cursor-pointer shadow-xs">
-              Xoa
+              Xóa
             </button>
           </div>
         </td>
@@ -282,6 +359,31 @@ async function loadGears() {
   renderGearsTable(gears);
 }
 
+// Di chuyển thứ tự đồ nghề (Lên / Xuống)
+window.handleMoveGear = async function(gearId, direction) {
+  const idx = currentGearsList.findIndex(g => g.id === gearId);
+  if (idx === -1) return;
+  const targetIdx = idx + direction;
+  if (targetIdx < 0 || targetIdx >= currentGearsList.length) return;
+
+  const currentGear = currentGearsList[idx];
+  const targetGear  = currentGearsList[targetIdx];
+
+  const currentOrder = currentGear.order !== undefined ? currentGear.order : (idx + 1);
+  const targetOrder  = targetGear.order !== undefined ? targetGear.order : (targetIdx + 1);
+
+  const finalOrder1 = currentOrder === targetOrder ? (targetIdx + 1) : targetOrder;
+  const finalOrder2 = currentOrder === targetOrder ? (idx + 1) : currentOrder;
+
+  const res = await swapGearsOrder(currentGear.id, finalOrder1, targetGear.id, finalOrder2);
+  if (res.success) {
+    showAdminToast(`Đã đổi vị trí món "${currentGear.title}"!`);
+    await loadGears();
+  } else {
+    showAdminToast(res.error || 'Lỗi khi đổi vị trí đồ nghề', false);
+  }
+};
+
 // ============================================================
 // FORM RESET HELPERS
 // ============================================================
@@ -290,19 +392,21 @@ function resetFormForNewSong() {
   if (form) form.reset();
 
   document.getElementById('form-song-id').value        = '';
-  document.getElementById('form-category').value       = 'Nhac Viet';
+  document.getElementById('form-title').value          = '';
+  document.getElementById('form-category').value       = 'Nhạc Việt';
+  document.getElementById('form-order').value          = currentSongsList.length + 1;
   document.getElementById('form-level').value          = '4/10';
   document.getElementById('form-levelNum').value       = 4;
   document.getElementById('form-tuning').value         = 'Standard';
   document.getElementById('form-duration').value       = '03:30';
-  document.getElementById('form-capo').value           = 'Khong kep';
+  document.getElementById('form-capo').value           = 'Không kẹp';
   document.getElementById('form-tempo').value          = '~95 BPM';
   document.getElementById('form-description').value    = '';
   document.getElementById('form-hasDemo').checked      = true;
   document.getElementById('form-videoDemo').value      = '';
   document.getElementById('form-targetUrl').value      = '';
   document.getElementById('form-price').value          = 239000;
-  document.getElementById('form-priceFormatted').value = '239.000d';
+  document.getElementById('form-priceFormatted').value = '239.000đ';
   document.getElementById('form-discountNote').value   = '';
 
   setTabType(true);
@@ -314,11 +418,11 @@ function resetFormForNewGear() {
 
   document.getElementById('form-gear-id').value         = '';
   document.getElementById('form-gear-title').value      = '';
-  document.getElementById('form-gear-category').value   = 'GUITAR CHINH';
+  document.getElementById('form-gear-category').value   = 'GUITAR CHÍNH';
   document.getElementById('form-gear-image').value      = 'assets/clover.jpg';
   document.getElementById('form-gear-description').value= '';
   document.getElementById('form-gear-buyUrl').value     = '';
-  document.getElementById('form-gear-buyText').value    = 'Mua tren Shopee';
+  document.getElementById('form-gear-buyText').value    = 'Mua trên Shopee';
   document.getElementById('form-gear-footerText').value = '';
   document.getElementById('form-gear-order').value      = currentGearsList.length + 1;
 }
@@ -330,24 +434,25 @@ window.handleEditSong = function(songId) {
   const song = currentSongsList.find(s => s.id === songId);
   if (!song) return;
 
-  document.getElementById('modal-form-title').textContent = 'Chinh Sua: ' + song.title;
-  document.getElementById('save-btn-text').textContent    = 'Luu Thay Doi';
+  document.getElementById('modal-form-title').textContent = 'Chỉnh Sửa: ' + song.title;
+  document.getElementById('save-btn-text').textContent    = 'Lưu Thay Đổi';
 
   document.getElementById('form-song-id').value         = song.id;
   document.getElementById('form-title').value           = song.title || '';
-  document.getElementById('form-category').value        = song.category || 'Nhac Viet';
+  document.getElementById('form-category').value        = song.category || 'Nhạc Việt';
+  document.getElementById('form-order').value           = song.order !== undefined ? song.order : 1;
   document.getElementById('form-level').value           = song.level || '4/10';
   document.getElementById('form-levelNum').value        = song.levelNum || 4;
   document.getElementById('form-tuning').value          = song.tuning || 'Standard';
   document.getElementById('form-duration').value        = song.duration || '03:30';
-  document.getElementById('form-capo').value            = song.capo || 'Khong kep';
+  document.getElementById('form-capo').value            = song.capo || 'Không kẹp';
   document.getElementById('form-tempo').value           = song.tempo || '~95 BPM';
   document.getElementById('form-description').value     = song.description || '';
   document.getElementById('form-hasDemo').checked       = Boolean(song.hasDemo);
   document.getElementById('form-videoDemo').value       = song.videoDemo || '';
   document.getElementById('form-targetUrl').value       = song.targetUrl || '';
   document.getElementById('form-price').value           = song.price || 0;
-  document.getElementById('form-priceFormatted').value  = song.priceFormatted || '239.000d';
+  document.getElementById('form-priceFormatted').value  = song.priceFormatted || '239.000đ';
   document.getElementById('form-discountNote').value    = song.discountNote || '';
 
   setTabType(Boolean(song.isFree));
@@ -554,12 +659,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const songData = {
         title,
-        category:       document.getElementById('form-category').value.trim() || 'Nhac Viet',
+        category:       document.getElementById('form-category').value.trim() || 'Nhạc Việt',
+        order:          Number(document.getElementById('form-order').value) || (isEdit ? 1 : (currentSongsList.length + 1)),
         level:          document.getElementById('form-level').value.trim() || '4/10',
         levelNum:       Number(document.getElementById('form-levelNum').value) || 4,
         tuning:         document.getElementById('form-tuning').value.trim() || 'Standard',
         duration:       document.getElementById('form-duration').value.trim() || '03:30',
-        capo:           document.getElementById('form-capo').value.trim() || 'Khong kep',
+        capo:           document.getElementById('form-capo').value.trim() || 'Không kẹp',
         tempo:          document.getElementById('form-tempo').value.trim() || '~95 BPM',
         description:    document.getElementById('form-description').value.trim(),
         hasDemo:        document.getElementById('form-hasDemo').checked,
