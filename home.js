@@ -34,8 +34,10 @@ function renderFeaturedSongs(songs) {
   const container = document.getElementById('featured-grid');
   if (!container) return;
 
-  // Không cần carousel classes — featured-grid dùng CSS grid thẳng
-  container.innerHTML = songs.map((tab, index) => renderSongCard(tab, index, '')).join('');
+  // Render tức thì không animation trễ thị giác, kèm class cuộn ngang mobile
+  container.innerHTML = songs.map((tab, index) => 
+    renderSongCard(tab, index, 'flex-shrink-0 w-[82vw] max-w-[320px] snap-center md:w-auto md:max-w-none')
+  ).join('');
 }
 
 
@@ -47,9 +49,9 @@ function showFeaturedSkeleton() {
   const container = document.getElementById('featured-grid');
   if (!container) return;
   container.innerHTML = `
-    <div class="skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
-    <div class="skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
-    <div class="skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
+    <div class="flex-shrink-0 w-[82vw] max-w-[320px] snap-center md:w-auto md:max-w-none skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
+    <div class="flex-shrink-0 w-[82vw] max-w-[320px] snap-center md:w-auto md:max-w-none skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
+    <div class="flex-shrink-0 w-[82vw] max-w-[320px] snap-center md:w-auto md:max-w-none skeleton-card rounded-3xl bg-surface/50 border border-charcoal-border/60 aspect-[3/4]"></div>
   `;
 }
 
@@ -293,31 +295,6 @@ function initSmoothFadeUp() {
   }
 }
 
-function animateFeaturedCards() {
-  if (typeof gsap === 'undefined') return;
-  const cards = document.querySelectorAll('#featured-grid > div');
-  if (cards.length === 0) return;
-
-  gsap.from(cards, {
-    opacity: 0,
-    y: 30,
-    duration: 0.6,
-    stagger: 0.1,
-    ease: 'power2.out',
-    clearProps: 'transform,opacity',
-    scrollTrigger: {
-      trigger: '#featured-grid',
-      start: 'top 85%',
-      once: true
-    }
-  });
-
-  if (typeof ScrollTrigger !== 'undefined') {
-    ScrollTrigger.refresh();
-  }
-}
-
-
 // ==========================================================================
 // DOMCONTENTLOADED
 // ==========================================================================
@@ -344,9 +321,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     computeNormalizedFields(songs);
     const featured = getFeaturedSongs(songs);
     renderFeaturedSongs(featured);
-
-    // Kích hoạt hiệu ứng Smooth Fade-Up cho 3 thẻ bài hát sau khi render xong
-    animateFeaturedCards();
   }
 
   // Init modal listeners (checkout, demo, copy buttons, Escape)
